@@ -393,6 +393,33 @@
 </style>
 </head>
 <body>
+
+<div class="modal-overlay" id="authOverlay" style="display:flex;">
+  <div class="modal" style="max-width:380px; width:92%;">
+    <div class="modal-header">
+      <h2 id="authTitle">Masuk ke Jeffrey AI</h2>
+    </div>
+    <div class="modal-body">
+      <div id="authError" style="display:none; color:var(--danger); font-size:13px; margin-bottom:10px; padding:8px 10px; background:rgba(229,72,77,0.08); border-radius:9px;"></div>
+      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:10px;">
+        <div>
+          <div class="settings-row-label" style="margin-bottom:6px;">Username</div>
+          <input type="text" id="authUsername" autocomplete="username" placeholder="username" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; outline:none;">
+        </div>
+        <div>
+          <div class="settings-row-label" style="margin-bottom:6px;">Password</div>
+          <input type="password" id="authPassword" autocomplete="current-password" placeholder="password" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; outline:none;">
+        </div>
+        <button class="btn-save-edit" id="authSubmitBtn" style="width:100%; padding:11px; border-radius:10px; margin-top:4px;">Masuk</button>
+        <div style="text-align:center; font-size:13px; color:var(--text-2); margin-top:4px;">
+          <span id="authSwitchText">Belum punya akun?</span>
+          <a href="#" id="authSwitchLink" style="color:var(--accent); font-weight:600; text-decoration:none;">Daftar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="app">
 
   <div class="overlay" id="overlay"></div>
@@ -415,6 +442,7 @@
     <div class="history-list" id="historyList"></div>
     <div class="sidebar-footer">
       <button class="btn-settings" id="settingsBtn">⚙️ Pengaturan</button>
+      <button class="btn-settings" id="sidebarLogoutBtn">🚪 Logout</button>
     </div>
   </aside>
 
@@ -539,21 +567,14 @@
         </div>
       </div>
       <div class="settings-section">
-        <h3>Persona AI</h3>
-        <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
-          <div>
-            <div class="settings-row-label">Preset persona tersimpan</div>
-            <div class="settings-row-sub">Pilih atau kelola beberapa persona, lalu terapkan ke chat aktif.</div>
-          </div>
-          <div id="personaPresetList" class="persona-preset-list"></div>
-          <textarea id="systemPromptInput" placeholder="Contoh: Kamu adalah asisten ramah yang menjawab singkat dan padat dalam Bahasa Indonesia." style="width:100%; min-height:80px; border-radius:11px; border:1px solid var(--border); padding:10px; background:var(--bg); color:var(--text); font-size:13.5px; font-family:inherit; resize:vertical;"></textarea>
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-            <button class="btn-accent-outline" id="saveAsPresetBtn">💾 Simpan sbg preset baru</button>
-            <div style="display:flex; gap:8px;">
-              <button class="btn-danger-outline" id="resetPersonaBtn" style="border-color:var(--border); color:var(--text-2);">Kosongkan</button>
-              <button class="btn-save-edit" id="savePersonaBtn" style="border-radius:9px; padding:7px 16px;">Terapkan</button>
-            </div>
-          </div>
+        <h3>Akun</h3>
+        <div class="settings-row">
+          <div class="settings-row-label">Masuk sebagai</div>
+          <div class="settings-row-sub" id="settingsUsername">-</div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label">Keluar dari akun</div>
+          <button class="btn-danger-outline" id="logoutBtn">Logout</button>
         </div>
       </div>
       <div class="settings-section">
@@ -626,9 +647,6 @@
   const attachBtn = document.getElementById("attachBtn");
   const fileInput = document.getElementById("fileInput");
   const filePreviewArea = document.getElementById("filePreviewArea");
-  const systemPromptInput = document.getElementById("systemPromptInput");
-  const savePersonaBtn = document.getElementById("savePersonaBtn");
-  const resetPersonaBtn = document.getElementById("resetPersonaBtn");
   const imageInput = document.getElementById("imageInput");
   const imageAttachBtn = document.getElementById("imageAttachBtn");
   const voiceBtn = document.getElementById("voiceBtn");
@@ -636,19 +654,48 @@
   const importChatBtn = document.getElementById("importChatBtn");
   const importChatInput = document.getElementById("importChatInput");
   const ttsToggle = document.getElementById("ttsToggle");
-  const personaPresetList = document.getElementById("personaPresetList");
-  const saveAsPresetBtn = document.getElementById("saveAsPresetBtn");
   const quickPromptList = document.getElementById("quickPromptList");
   const newQuickPromptInput = document.getElementById("newQuickPromptInput");
   const addQuickPromptBtn = document.getElementById("addQuickPromptBtn");
   const promptPresets = document.getElementById("promptPresets");
   const charCounter = document.getElementById("charCounter");
 
+  // ---------- Auth DOM ----------
+  const authOverlay = document.getElementById("authOverlay");
+  const authTitle = document.getElementById("authTitle");
+  const authError = document.getElementById("authError");
+  const authUsername = document.getElementById("authUsername");
+  const authPassword = document.getElementById("authPassword");
+  const authSubmitBtn = document.getElementById("authSubmitBtn");
+  const authSwitchText = document.getElementById("authSwitchText");
+  const authSwitchLink = document.getElementById("authSwitchLink");
+  const settingsUsername = document.getElementById("settingsUsername");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
+
   let settings = {
-    theme:"system", enterToSend:true, systemPrompt:"", ttsEnabled:false,
-    personaPresets: [], // [{id, name, prompt}]
+    theme:"system", enterToSend:true, ttsEnabled:false,
     quickPrompts: ["Ringkas teks ini", "Perbaiki tata bahasa", "Terjemahkan ke Inggris", "Buatkan poin-poin penting"]
   };
+
+  // ---------- Session ----------
+  const SESSION_KEY = "jeffrey_ai_session";
+  let session = null; // { token, username }
+  let authMode = "login"; // "login" | "signup"
+
+  function loadSession(){
+    try{
+      const raw = localStorage.getItem(SESSION_KEY);
+      if(raw) session = JSON.parse(raw);
+    }catch(e){}
+  }
+  function saveSession(){
+    try{ localStorage.setItem(SESSION_KEY, JSON.stringify(session)); }catch(e){}
+  }
+  function clearSession(){
+    session = null;
+    try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+  }
 
 
   // ---------- Utils ----------
@@ -1154,7 +1201,7 @@
       action: "chat",
       model: model.id,
       messages: messages.map(m=>({ role: m.role, content: m.content })),
-      systemPrompt: settings.systemPrompt || ""
+      token: session ? session.token : ""
     };
     if(fileContext){
       payload.fileContext = { name: fileContext.name, content: fileContext.content };
@@ -1188,6 +1235,10 @@
         const data = await response.json();
 
         if(data.error){
+          if(data.needLogin){
+            clearSession();
+            showAuthOverlay();
+          }
           throw new Error(data.error);
         }
         if(typeof data.reply === "string"){
@@ -1491,8 +1542,7 @@
 
   // ---------- Settings modal ----------
   settingsBtn.addEventListener("click", ()=>{
-    systemPromptInput.value = settings.systemPrompt || "";
-    renderPersonaPresets();
+    settingsUsername.textContent = session ? session.username : "-";
     renderQuickPromptSettings();
     settingsModal.classList.add("show");
   });
@@ -1513,45 +1563,94 @@
     saveSettings();
   });
 
-  function renderPersonaPresets(){
-    personaPresetList.innerHTML = "";
-    if(!settings.personaPresets || settings.personaPresets.length === 0){
-      personaPresetList.innerHTML = '<div class="persona-chip-empty">Belum ada preset tersimpan.</div>';
-      return;
+  // ---------- Auth ----------
+  function showAuthOverlay(){
+    authOverlay.style.display = "flex";
+  }
+  function hideAuthOverlay(){
+    authOverlay.style.display = "none";
+  }
+  function setAuthError(msg){
+    if(!msg){ authError.style.display = "none"; authError.textContent = ""; return; }
+    authError.style.display = "block";
+    authError.textContent = msg;
+  }
+  function applyAuthMode(){
+    setAuthError("");
+    if(authMode === "login"){
+      authTitle.textContent = "Masuk ke Jeffrey AI";
+      authSubmitBtn.textContent = "Masuk";
+      authSwitchText.textContent = "Belum punya akun?";
+      authSwitchLink.textContent = "Daftar";
+    } else {
+      authTitle.textContent = "Daftar Akun Baru";
+      authSubmitBtn.textContent = "Daftar";
+      authSwitchText.textContent = "Sudah punya akun?";
+      authSwitchLink.textContent = "Masuk";
     }
-    settings.personaPresets.forEach(p=>{
-      const chip = document.createElement("div");
-      chip.className = "persona-chip" + (settings.systemPrompt === p.prompt ? " active" : "");
-      chip.innerHTML = `<span>${escapeHtml(p.name)}</span><span class="persona-chip-del" title="Hapus preset">✕</span>`;
-      chip.addEventListener("click", (e)=>{
-        if(e.target.classList.contains("persona-chip-del")) return;
-        systemPromptInput.value = p.prompt;
-        settings.systemPrompt = p.prompt;
-        saveSettings();
-        renderPersonaPresets();
-      });
-      chip.querySelector(".persona-chip-del").addEventListener("click", (e)=>{
-        e.stopPropagation();
-        if(confirm(`Hapus preset "${p.name}"?`)){
-          settings.personaPresets = settings.personaPresets.filter(x=>x.id!==p.id);
-          saveSettings();
-          renderPersonaPresets();
-        }
-      });
-      personaPresetList.appendChild(chip);
+  }
+  authSwitchLink.addEventListener("click", (e)=>{
+    e.preventDefault();
+    authMode = authMode === "login" ? "signup" : "login";
+    applyAuthMode();
+  });
+
+  async function callBackend(payload){
+    const response = await fetch(BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
     });
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
   }
 
-  saveAsPresetBtn.addEventListener("click", ()=>{
-    const prompt = systemPromptInput.value.trim();
-    if(!prompt){ alert("Isi dulu instruksi sistemnya sebelum disimpan sebagai preset."); return; }
-    const name = window.prompt("Nama preset:", "Persona Baru");
-    if(!name || !name.trim()) return;
-    settings.personaPresets = settings.personaPresets || [];
-    settings.personaPresets.push({ id: uid(), name: name.trim(), prompt: prompt });
-    saveSettings();
-    renderPersonaPresets();
-  });
+  async function handleAuthSubmit(){
+    const username = authUsername.value.trim();
+    const password = authPassword.value;
+    if(!username || !password){
+      setAuthError("Username dan password wajib diisi.");
+      return;
+    }
+    authSubmitBtn.disabled = true;
+    const originalLabel = authSubmitBtn.textContent;
+    authSubmitBtn.textContent = "Memproses...";
+    setAuthError("");
+    try{
+      const data = await callBackend({ action: authMode, username, password });
+      if(data.error){
+        setAuthError(data.error);
+        return;
+      }
+      session = { token: data.token, username: data.username };
+      saveSession();
+      authUsername.value = "";
+      authPassword.value = "";
+      hideAuthOverlay();
+      settingsUsername.textContent = session.username;
+    }catch(err){
+      setAuthError("Gagal menghubungi server: " + (err.message || "tidak diketahui"));
+    }finally{
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = originalLabel;
+    }
+  }
+  authSubmitBtn.addEventListener("click", handleAuthSubmit);
+  authPassword.addEventListener("keydown", (e)=>{ if(e.key === "Enter") handleAuthSubmit(); });
+  authUsername.addEventListener("keydown", (e)=>{ if(e.key === "Enter") authPassword.focus(); });
+
+  async function doLogout(){
+    if(session){
+      try{ await callBackend({ action: "logout", token: session.token }); }catch(e){}
+    }
+    clearSession();
+    settingsModal.classList.remove("show");
+    authMode = "login";
+    applyAuthMode();
+    showAuthOverlay();
+  }
+  logoutBtn.addEventListener("click", doLogout);
+  sidebarLogoutBtn.addEventListener("click", doLogout);
 
   // ---------- Quick prompts ----------
   function renderQuickPromptSettings(){
@@ -1610,21 +1709,6 @@
     charCounter.textContent = len > 0 ? len + " karakter" : "";
   }
 
-  savePersonaBtn.addEventListener("click", ()=>{
-    settings.systemPrompt = systemPromptInput.value.trim();
-    saveSettings();
-    renderPersonaPresets();
-    savePersonaBtn.textContent = "Diterapkan ✓";
-    setTimeout(()=>{ savePersonaBtn.textContent = "Terapkan"; }, 1500);
-  });
-
-  resetPersonaBtn.addEventListener("click", ()=>{
-    systemPromptInput.value = "";
-    settings.systemPrompt = "";
-    saveSettings();
-    renderPersonaPresets();
-  });
-
   clearHistoryBtn.addEventListener("click", ()=>{
     if(confirm("Hapus semua riwayat chat? Tindakan ini tidak bisa dibatalkan.")){
       chats = [];
@@ -1648,6 +1732,14 @@
 
   // ---------- Init ----------
   async function init(){
+    loadSession();
+    if(!session || !session.token){
+      applyAuthMode();
+      showAuthOverlay();
+    } else {
+      settingsUsername.textContent = session.username;
+    }
+
     loadSettings();
     loadChats();
     applyTheme();
