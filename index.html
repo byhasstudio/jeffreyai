@@ -237,11 +237,11 @@
   .msg.user .msg-content :not(pre) > code{background:rgba(255,255,255,0.2); color:#fff;}
   .msg.user .msg-actions{justify-content:flex-end;}
 
-  #filePreviewArea{max-width:760px; margin:0 auto; padding:0 0 8px;}
+  #filePreviewArea{max-width:760px; margin:0 auto; padding:0 0 8px; display:flex; flex-wrap:wrap; gap:8px;}
   .file-chip{
     display:inline-flex; align-items:center; gap:8px; padding:7px 10px 7px 12px; border-radius:12px;
-    border:1px solid var(--border); background:var(--bg-2); font-size:12.5px; color:var(--text);
-    animation:popIn .25s var(--ease-spring);
+    border:1px solid var(--border); background:var(--bg-2); font-size:12.5px; color:var(--text); height:36px;
+    animation:popIn .25s var(--ease-spring); box-sizing:border-box;
   }
   .file-chip .file-chip-icon{font-size:15px;}
   .file-chip .file-chip-name{max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600;}
@@ -250,8 +250,8 @@
     transition:background .15s var(--ease), color .15s var(--ease);
   }
   .file-chip .file-chip-remove:hover{background:var(--bg-3); color:var(--danger);}
-  .file-chip.image-chip{padding:4px;}
-  .file-chip.image-chip img{width:44px; height:44px; object-fit:cover; border-radius:9px;}
+  .file-chip.image-chip{padding:4px 10px 4px 4px;}
+  .file-chip.image-chip img{width:28px; height:28px; object-fit:cover; border-radius:7px;}
   #voiceBtn.listening{background:var(--danger); color:#fff; border-color:var(--danger); animation:glowPulse 1.4s infinite;}
   .msg-actions button.tts-playing{color:var(--accent);}
   .attachment-tag{
@@ -276,15 +276,16 @@
   .input-area{padding:12px 16px 18px; flex-shrink:0;}
   .input-inner{max-width:760px; margin:0 auto;}
   .input-box{
-    display:flex; align-items:flex-end; gap:8px; border:1px solid var(--border); border-radius:18px;
+    display:flex; align-items:flex-end; gap:6px; border:1px solid var(--border); border-radius:18px;
     padding:10px 10px 10px 16px; background:var(--bg); box-shadow:var(--shadow);
     transition:border-color .2s var(--ease), box-shadow .2s var(--ease);
   }
   .input-box:focus-within{border-color:var(--accent); box-shadow:var(--accent-glow);}
   .input-box textarea{
     flex:1; border:none; outline:none; resize:none; background:transparent; color:var(--text);
-    font-size:15px; font-family:inherit; max-height:200px; line-height:1.5; padding:6px 0;
+    font-size:15px; font-family:inherit; max-height:200px; line-height:1.5; padding:6px 4px;
   }
+  .attach-icon-btn{width:32px; height:32px; font-size:14px; flex-shrink:0;}
   .send-btn{
     width:37px; height:37px; border-radius:11px; border:none; background:var(--accent); color:#fff;
     cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px;
@@ -354,12 +355,40 @@
   }
   .btn-danger-outline:hover{background:rgba(229,72,77,0.1); transform:translateY(-1px);}
   .btn-danger-outline:active{transform:translateY(0) scale(.96);}
+  .btn-accent-outline{
+    padding:8px 14px; border-radius:9px; border:1px solid var(--accent); color:var(--accent); background:none;
+    font-size:13px; cursor:pointer; font-weight:600; transition:background .18s var(--ease), transform .15s var(--ease);
+  }
+  .btn-accent-outline:hover{background:rgba(16,163,127,0.1); transform:translateY(-1px);}
+  .btn-accent-outline:active{transform:translateY(0) scale(.96);}
+  .persona-preset-list{display:flex; flex-wrap:wrap; gap:6px;}
+  .persona-chip{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:9px; border:1px solid var(--border);
+    background:var(--bg); font-size:12.5px; cursor:pointer; transition:background .15s var(--ease), border-color .15s var(--ease);
+  }
+  .persona-chip:hover{background:var(--bg-3);}
+  .persona-chip.active{border-color:var(--accent); background:rgba(16,163,127,0.1); color:var(--accent); font-weight:600;}
+  .persona-chip .persona-chip-del{color:var(--text-2); font-size:11px; padding:0 2px;}
+  .persona-chip .persona-chip-del:hover{color:var(--danger);}
+  .persona-chip-empty{color:var(--text-2); font-size:12.5px; padding:6px 0;}
+  .history-item-actions button.pin-btn.pinned{color:var(--accent);}
+  .history-item.pinned .history-title::before{content:"📌 "; font-size:11px;}
+  .char-counter{font-size:11px; color:var(--text-2); text-align:right; padding:2px 4px 0 0; user-select:none;}
+  .prompt-presets{display:flex; flex-wrap:wrap; gap:8px; width:100%; max-width:560px; margin-top:6px;}
+  .prompt-preset-chip{
+    padding:7px 13px; border-radius:20px; border:1px solid var(--border); background:var(--bg); color:var(--text);
+    font-size:12.5px; cursor:pointer; transition:background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease);
+  }
+  .prompt-preset-chip:hover{background:var(--bg-3); border-color:var(--accent); transform:translateY(-1px);}
 
   @media (max-width:768px){
     .sidebar{position:fixed; z-index:50; height:100vh; transform:translateX(-100%); box-shadow:var(--shadow-lg);}
     .sidebar.open{transform:translateX(0);}
     .menu-toggle{display:flex;}
     .suggestions{grid-template-columns:1fr;}
+    .input-box{padding:8px 8px 8px 12px; gap:4px;}
+    .attach-icon-btn{width:30px; height:30px; font-size:13px;}
+    .model-btn{width:30px; height:30px;}
   }
 </style>
 </head>
@@ -411,6 +440,7 @@
             <div class="suggestion-card" data-suggestion="Buatkan ide">✨ Buatkan ide</div>
             <div class="suggestion-card" data-suggestion="Analisis teks">🔍 Analisis teks</div>
           </div>
+          <div class="prompt-presets" id="promptPresets"></div>
         </div>
         <div id="messagesContainer"></div>
       </div>
@@ -427,20 +457,21 @@
             </button>
             <div class="model-dropdown" id="modelDropdown"></div>
           </div>
-          <button class="model-btn" id="attachBtn" title="Lampirkan file">
+          <button class="model-btn attach-icon-btn" id="attachBtn" title="Lampirkan file">
             <span>📎</span>
           </button>
           <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.js,.py,.html,.css,.log" hidden>
-          <button class="model-btn" id="imageAttachBtn" title="Lampirkan gambar">
+          <button class="model-btn attach-icon-btn" id="imageAttachBtn" title="Lampirkan gambar">
             <span>🖼️</span>
           </button>
           <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp,image/heic" hidden>
-          <button class="model-btn" id="voiceBtn" title="Input suara">
+          <button class="model-btn attach-icon-btn" id="voiceBtn" title="Input suara">
             <span>🎤</span>
           </button>
           <textarea id="messageInput" placeholder="Kirim pesan ke Jeffrey AI..." rows="1"></textarea>
           <button class="send-btn" id="sendBtn">➤</button>
         </div>
+        <div class="char-counter" id="charCounter"></div>
         <div class="input-hint">Jeffrey AI dapat membuat kesalahan. Periksa kembali info penting.</div>
       </div>
     </div>
@@ -484,11 +515,11 @@
         </div>
         <div class="settings-row">
           <div class="settings-row-label">Export riwayat chat</div>
-          <button class="btn-danger-outline" id="exportChatBtn" style="border-color:var(--accent); color:var(--accent);">Export</button>
+          <button class="btn-accent-outline" id="exportChatBtn">Export</button>
         </div>
         <div class="settings-row">
           <div class="settings-row-label">Import riwayat chat</div>
-          <button class="btn-danger-outline" id="importChatBtn" style="border-color:var(--accent); color:var(--accent);">Import</button>
+          <button class="btn-accent-outline" id="importChatBtn">Import</button>
           <input type="file" id="importChatInput" accept=".json" hidden>
         </div>
         <div class="settings-row">
@@ -497,16 +528,31 @@
         </div>
       </div>
       <div class="settings-section">
+        <h3>Preset Prompt Cepat</h3>
+        <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+          <div class="settings-row-sub">Muncul sebagai tombol shortcut di layar sambutan.</div>
+          <div id="quickPromptList" class="persona-preset-list"></div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="newQuickPromptInput" placeholder="Tulis prompt baru..." style="flex:1; padding:8px 10px; border-radius:9px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:13px; outline:none;">
+            <button class="btn-accent-outline" id="addQuickPromptBtn">Tambah</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
         <h3>Persona AI</h3>
         <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
           <div>
-            <div class="settings-row-label">Instruksi sistem (system prompt)</div>
-            <div class="settings-row-sub">Atur gaya bicara, peran, atau batasan Jeffrey AI untuk semua chat.</div>
+            <div class="settings-row-label">Preset persona tersimpan</div>
+            <div class="settings-row-sub">Pilih atau kelola beberapa persona, lalu terapkan ke chat aktif.</div>
           </div>
+          <div id="personaPresetList" class="persona-preset-list"></div>
           <textarea id="systemPromptInput" placeholder="Contoh: Kamu adalah asisten ramah yang menjawab singkat dan padat dalam Bahasa Indonesia." style="width:100%; min-height:80px; border-radius:11px; border:1px solid var(--border); padding:10px; background:var(--bg); color:var(--text); font-size:13.5px; font-family:inherit; resize:vertical;"></textarea>
-          <div style="display:flex; justify-content:flex-end; gap:8px;">
-            <button class="btn-danger-outline" id="resetPersonaBtn" style="border-color:var(--border); color:var(--text-2);">Reset</button>
-            <button class="btn-save-edit" id="savePersonaBtn" style="border-radius:9px; padding:7px 16px;">Simpan</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn-accent-outline" id="saveAsPresetBtn">💾 Simpan sbg preset baru</button>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-danger-outline" id="resetPersonaBtn" style="border-color:var(--border); color:var(--text-2);">Kosongkan</button>
+              <button class="btn-save-edit" id="savePersonaBtn" style="border-radius:9px; padding:7px 16px;">Terapkan</button>
+            </div>
           </div>
         </div>
       </div>
@@ -590,8 +636,19 @@
   const importChatBtn = document.getElementById("importChatBtn");
   const importChatInput = document.getElementById("importChatInput");
   const ttsToggle = document.getElementById("ttsToggle");
+  const personaPresetList = document.getElementById("personaPresetList");
+  const saveAsPresetBtn = document.getElementById("saveAsPresetBtn");
+  const quickPromptList = document.getElementById("quickPromptList");
+  const newQuickPromptInput = document.getElementById("newQuickPromptInput");
+  const addQuickPromptBtn = document.getElementById("addQuickPromptBtn");
+  const promptPresets = document.getElementById("promptPresets");
+  const charCounter = document.getElementById("charCounter");
 
-  let settings = { theme:"system", enterToSend:true, systemPrompt:"", ttsEnabled:false };
+  let settings = {
+    theme:"system", enterToSend:true, systemPrompt:"", ttsEnabled:false,
+    personaPresets: [], // [{id, name, prompt}]
+    quickPrompts: ["Ringkas teks ini", "Perbaiki tata bahasa", "Terjemahkan ke Inggris", "Buatkan poin-poin penting"]
+  };
 
 
   // ---------- Utils ----------
@@ -757,19 +814,21 @@
 
   function renderHistory(filter){
     historyList.innerHTML = "";
-    const list = filter
-      ? chats.filter(c=> c.title.toLowerCase().includes(filter.toLowerCase()))
+    let list = filter
+      ? chats.filter(c=> c.title.toLowerCase().includes(filter.toLowerCase()) || (c.messages||[]).some(m=>(m.content||"").toLowerCase().includes(filter.toLowerCase())))
       : chats;
+    list = list.slice().sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0));
     if(list.length === 0){
       historyList.innerHTML = '<div class="empty-history">Belum ada percakapan</div>';
       return;
     }
     list.forEach(chat=>{
       const item = document.createElement("div");
-      item.className = "history-item" + (chat.id === currentChatId ? " active" : "");
+      item.className = "history-item" + (chat.id === currentChatId ? " active" : "") + (chat.pinned ? " pinned" : "");
       item.innerHTML = `
         <span class="history-title"></span>
         <div class="history-item-actions">
+          <button data-action="pin" class="pin-btn${chat.pinned ? " pinned" : ""}" title="${chat.pinned ? "Lepas pin" : "Sematkan"}">📌</button>
           <button data-action="rename" title="Rename">✏️</button>
           <button data-action="delete" title="Hapus">🗑️</button>
         </div>`;
@@ -782,6 +841,12 @@
         renderHistory(searchInput.value);
         renderChat();
         closeSidebarMobile();
+      });
+      item.querySelector('[data-action="pin"]').addEventListener("click",(e)=>{
+        e.stopPropagation();
+        chat.pinned = !chat.pinned;
+        saveChats();
+        renderHistory(searchInput.value);
       });
       item.querySelector('[data-action="rename"]').addEventListener("click",(e)=>{
         e.stopPropagation();
@@ -851,7 +916,7 @@
     const content = document.createElement("div");
     content.className = "msg-content";
     if(msg.imagePreview){
-      content.innerHTML = `<img src="${msg.imagePreview}" alt="lampiran gambar" style="max-width:220px; border-radius:12px; margin-bottom:8px; display:block;">` + renderMarkdown(msg.content || "");
+      content.innerHTML = `<img src="${msg.imagePreview}" alt="lampiran gambar" style="max-width:220px; max-height:260px; object-fit:cover; border-radius:12px; margin-bottom:8px; display:block;">` + renderMarkdown(msg.content || "");
     } else {
       content.innerHTML = renderMarkdown(msg.content || "");
     }
@@ -1016,7 +1081,10 @@
     scrollToBottom();
 
     try{
-      const reply = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend);
+      const reply = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
+        const typingLabel = typingWrap.querySelector(".msg-role");
+        if(typingLabel) typingLabel.textContent = `Jeffrey AI (mencoba lagi ${attempt}/2...)`;
+      });
 
       // Ganti indikator typing dengan bubble kosong, lalu ketik bertahap (efek streaming)
       typingWrap.innerHTML = `
@@ -1079,7 +1147,7 @@
   }
 
   // ---------- API Call (lewat Google Apps Script proxy) ----------
-  async function sendToAI(messages, model, fileContext, imageContext){
+  async function sendToAI(messages, model, fileContext, imageContext, onRetry){
     const controller = abortController;
 
     const payload = {
@@ -1095,27 +1163,50 @@
       payload.imageContext = { name: imageContext.name, mimeType: imageContext.mimeType, dataBase64: imageContext.dataBase64 };
     }
 
-    const response = await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // hindari CORS preflight ke Apps Script
-      body: JSON.stringify(payload),
-      signal: controller ? controller.signal : undefined
-    });
+    const maxRetries = 2;
+    let lastErr = null;
+    for(let attempt = 0; attempt <= maxRetries; attempt++){
+      try{
+        const response = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" }, // hindari CORS preflight ke Apps Script
+          body: JSON.stringify(payload),
+          signal: controller ? controller.signal : undefined
+        });
 
-    if(!response.ok){
-      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        if(!response.ok){
+          // 5xx / rate limit dianggap layak di-retry; 4xx lain langsung gagal
+          if((response.status >= 500 || response.status === 429) && attempt < maxRetries){
+            lastErr = new Error(`HTTP ${response.status} - ${response.statusText}`);
+            if(onRetry) onRetry(attempt+1);
+            await new Promise(r=>setTimeout(r, 700 * (attempt+1)));
+            continue;
+          }
+          throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if(data.error){
+          throw new Error(data.error);
+        }
+        if(typeof data.reply === "string"){
+          return data.reply;
+        }
+        throw new Error("Format respons dari Apps Script tidak dikenali.");
+      }catch(err){
+        if(err.name === "AbortError") throw err;
+        lastErr = err;
+        // Error jaringan (fetch gagal total) juga layak di-retry
+        if(attempt < maxRetries){
+          if(onRetry) onRetry(attempt+1);
+          await new Promise(r=>setTimeout(r, 700 * (attempt+1)));
+          continue;
+        }
+        throw lastErr;
+      }
     }
-
-    const data = await response.json();
-
-    if(data.error){
-      throw new Error(data.error);
-    }
-    if(typeof data.reply === "string"){
-      return data.reply;
-    }
-
-    throw new Error("Format respons dari Apps Script tidak dikenali.");
+    throw lastErr || new Error("Gagal menghubungi server.");
   }
 
   // ---------- Input handling ----------
@@ -1143,6 +1234,7 @@
   }
 
   messageInput.addEventListener("input", autoResize);
+  messageInput.addEventListener("input", updateCharCounter);
   messageInput.addEventListener("keydown", (e)=>{
     if(e.key === "Enter" && !e.shiftKey){
       if(settings.enterToSend){
@@ -1400,6 +1492,8 @@
   // ---------- Settings modal ----------
   settingsBtn.addEventListener("click", ()=>{
     systemPromptInput.value = settings.systemPrompt || "";
+    renderPersonaPresets();
+    renderQuickPromptSettings();
     settingsModal.classList.add("show");
   });
   closeSettings.addEventListener("click", ()=> settingsModal.classList.remove("show"));
@@ -1419,17 +1513,116 @@
     saveSettings();
   });
 
+  function renderPersonaPresets(){
+    personaPresetList.innerHTML = "";
+    if(!settings.personaPresets || settings.personaPresets.length === 0){
+      personaPresetList.innerHTML = '<div class="persona-chip-empty">Belum ada preset tersimpan.</div>';
+      return;
+    }
+    settings.personaPresets.forEach(p=>{
+      const chip = document.createElement("div");
+      chip.className = "persona-chip" + (settings.systemPrompt === p.prompt ? " active" : "");
+      chip.innerHTML = `<span>${escapeHtml(p.name)}</span><span class="persona-chip-del" title="Hapus preset">✕</span>`;
+      chip.addEventListener("click", (e)=>{
+        if(e.target.classList.contains("persona-chip-del")) return;
+        systemPromptInput.value = p.prompt;
+        settings.systemPrompt = p.prompt;
+        saveSettings();
+        renderPersonaPresets();
+      });
+      chip.querySelector(".persona-chip-del").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        if(confirm(`Hapus preset "${p.name}"?`)){
+          settings.personaPresets = settings.personaPresets.filter(x=>x.id!==p.id);
+          saveSettings();
+          renderPersonaPresets();
+        }
+      });
+      personaPresetList.appendChild(chip);
+    });
+  }
+
+  saveAsPresetBtn.addEventListener("click", ()=>{
+    const prompt = systemPromptInput.value.trim();
+    if(!prompt){ alert("Isi dulu instruksi sistemnya sebelum disimpan sebagai preset."); return; }
+    const name = window.prompt("Nama preset:", "Persona Baru");
+    if(!name || !name.trim()) return;
+    settings.personaPresets = settings.personaPresets || [];
+    settings.personaPresets.push({ id: uid(), name: name.trim(), prompt: prompt });
+    saveSettings();
+    renderPersonaPresets();
+  });
+
+  // ---------- Quick prompts ----------
+  function renderQuickPromptSettings(){
+    quickPromptList.innerHTML = "";
+    if(!settings.quickPrompts || settings.quickPrompts.length === 0){
+      quickPromptList.innerHTML = '<div class="persona-chip-empty">Belum ada preset prompt.</div>';
+    } else {
+      settings.quickPrompts.forEach((qp, i)=>{
+        const chip = document.createElement("div");
+        chip.className = "persona-chip";
+        chip.innerHTML = `<span>${escapeHtml(qp)}</span><span class="persona-chip-del" title="Hapus">✕</span>`;
+        chip.querySelector(".persona-chip-del").addEventListener("click", ()=>{
+          settings.quickPrompts.splice(i,1);
+          saveSettings();
+          renderQuickPromptSettings();
+          renderQuickPromptButtons();
+        });
+        quickPromptList.appendChild(chip);
+      });
+    }
+  }
+
+  function renderQuickPromptButtons(){
+    promptPresets.innerHTML = "";
+    (settings.quickPrompts || []).forEach(qp=>{
+      const btn = document.createElement("div");
+      btn.className = "prompt-preset-chip";
+      btn.textContent = qp;
+      btn.addEventListener("click", ()=>{
+        messageInput.value = qp;
+        autoResize();
+        updateCharCounter();
+        handleSend();
+      });
+      promptPresets.appendChild(btn);
+    });
+  }
+
+  addQuickPromptBtn.addEventListener("click", ()=>{
+    const val = newQuickPromptInput.value.trim();
+    if(!val) return;
+    settings.quickPrompts = settings.quickPrompts || [];
+    settings.quickPrompts.push(val);
+    newQuickPromptInput.value = "";
+    saveSettings();
+    renderQuickPromptSettings();
+    renderQuickPromptButtons();
+  });
+  newQuickPromptInput.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter"){ e.preventDefault(); addQuickPromptBtn.click(); }
+  });
+
+  // ---------- Char counter ----------
+  function updateCharCounter(){
+    const len = messageInput.value.length;
+    charCounter.textContent = len > 0 ? len + " karakter" : "";
+  }
+
   savePersonaBtn.addEventListener("click", ()=>{
     settings.systemPrompt = systemPromptInput.value.trim();
     saveSettings();
-    savePersonaBtn.textContent = "Tersimpan ✓";
-    setTimeout(()=>{ savePersonaBtn.textContent = "Simpan"; }, 1500);
+    renderPersonaPresets();
+    savePersonaBtn.textContent = "Diterapkan ✓";
+    setTimeout(()=>{ savePersonaBtn.textContent = "Terapkan"; }, 1500);
   });
 
   resetPersonaBtn.addEventListener("click", ()=>{
     systemPromptInput.value = "";
     settings.systemPrompt = "";
     saveSettings();
+    renderPersonaPresets();
   });
 
   clearHistoryBtn.addEventListener("click", ()=>{
@@ -1478,6 +1671,7 @@
     updateApiStatus();
     renderHistory();
     renderChat();
+    renderQuickPromptButtons();
   }
 
   init();
