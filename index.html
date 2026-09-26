@@ -250,6 +250,10 @@
     transition:background .15s var(--ease), color .15s var(--ease);
   }
   .file-chip .file-chip-remove:hover{background:var(--bg-3); color:var(--danger);}
+  .file-chip.image-chip{padding:4px;}
+  .file-chip.image-chip img{width:44px; height:44px; object-fit:cover; border-radius:9px;}
+  #voiceBtn.listening{background:var(--danger); color:#fff; border-color:var(--danger); animation:glowPulse 1.4s infinite;}
+  .msg-actions button.tts-playing{color:var(--accent);}
   .attachment-tag{
     display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:10px; background:rgba(16,163,127,0.12);
     color:var(--accent); font-size:11.5px; font-weight:600; margin-bottom:6px;
@@ -427,6 +431,13 @@
             <span>📎</span>
           </button>
           <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.js,.py,.html,.css,.log" hidden>
+          <button class="model-btn" id="imageAttachBtn" title="Lampirkan gambar">
+            <span>🖼️</span>
+          </button>
+          <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp,image/heic" hidden>
+          <button class="model-btn" id="voiceBtn" title="Input suara">
+            <span>🎤</span>
+          </button>
           <textarea id="messageInput" placeholder="Kirim pesan ke Jeffrey AI..." rows="1"></textarea>
           <button class="send-btn" id="sendBtn">➤</button>
         </div>
@@ -463,6 +474,22 @@
             <div class="settings-row-sub">Shift+Enter untuk baris baru</div>
           </div>
           <div class="toggle" id="enterToggle"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Bacakan balasan AI (Text-to-Speech)</div>
+            <div class="settings-row-sub">Tombol 🔊 muncul di tiap pesan AI</div>
+          </div>
+          <div class="toggle" id="ttsToggle"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label">Export riwayat chat</div>
+          <button class="btn-danger-outline" id="exportChatBtn" style="border-color:var(--accent); color:var(--accent);">Export</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label">Import riwayat chat</div>
+          <button class="btn-danger-outline" id="importChatBtn" style="border-color:var(--accent); color:var(--accent);">Import</button>
+          <input type="file" id="importChatInput" accept=".json" hidden>
         </div>
         <div class="settings-row">
           <div class="settings-row-label">Hapus semua riwayat chat</div>
@@ -517,7 +544,10 @@
   let isGenerating = false;
   let abortController = null;
   let editingMessageIndex = null;
-  let attachedFile = null;   // {name, content} - file yang sedang dilampirkan ke pesan berikutnya
+  let attachedFile = null;   // {name, content} - file teks yang sedang dilampirkan ke pesan berikutnya
+  let attachedImage = null;  // {name, mimeType, dataBase64, previewUrl} - gambar yang sedang dilampirkan
+  let recognition = null;    // Web Speech API instance untuk voice input
+  let isListening = false;
 
   const STORAGE_KEY = "jeffrey_ai_chats";
   const SETTINGS_KEY = "jeffrey_ai_settings";
@@ -553,8 +583,15 @@
   const systemPromptInput = document.getElementById("systemPromptInput");
   const savePersonaBtn = document.getElementById("savePersonaBtn");
   const resetPersonaBtn = document.getElementById("resetPersonaBtn");
+  const imageInput = document.getElementById("imageInput");
+  const imageAttachBtn = document.getElementById("imageAttachBtn");
+  const voiceBtn = document.getElementById("voiceBtn");
+  const exportChatBtn = document.getElementById("exportChatBtn");
+  const importChatBtn = document.getElementById("importChatBtn");
+  const importChatInput = document.getElementById("importChatInput");
+  const ttsToggle = document.getElementById("ttsToggle");
 
-  let settings = { theme:"system", enterToSend:true, systemPrompt:"" };
+  let settings = { theme:"system", enterToSend:true, systemPrompt:"", ttsEnabled:false };
 
 
   // ---------- Utils ----------
@@ -813,7 +850,11 @@
 
     const content = document.createElement("div");
     content.className = "msg-content";
-    content.innerHTML = renderMarkdown(msg.content || "");
+    if(msg.imagePreview){
+      content.innerHTML = `<img src="${msg.imagePreview}" alt="lampiran gambar" style="max-width:220px; border-radius:12px; margin-bottom:8px; display:block;">` + renderMarkdown(msg.content || "");
+    } else {
+      content.innerHTML = renderMarkdown(msg.content || "");
+    }
 
     body.appendChild(roleLabel);
     body.appendChild(content);
@@ -823,7 +864,7 @@
     if(msg.role === "user"){
       actions.innerHTML = `<button data-act="edit">✏️ Edit</button>`;
     } else {
-      actions.innerHTML = `<button data-act="copy">📋 Copy</button><button data-act="regenerate">🔄 Regenerate</button>`;
+      actions.innerHTML = `<button data-act="copy">📋 Copy</button><button data-act="regenerate">🔄 Regenerate</button><button data-act="tts">🔊 Dengar</button>`;
     }
     body.appendChild(actions);
 
@@ -838,6 +879,8 @@
           startEditMessage(idx);
         } else if(act === "regenerate"){
           regenerateFrom(idx);
+        } else if(act === "tts"){
+          speakText(msg.content || "");
         }
       });
     });
@@ -913,14 +956,16 @@
   }
 
   // ---------- Sending ----------
-  function addUserMessage(text){
+  function addUserMessage(text, imagePreviewUrl){
     let chat = getCurrentChat();
     if(!chat){
       chat = { id: uid(), title:"Percakapan Baru", messages: [], model: selectedModel?selectedModel.id:null, createdAt: Date.now() };
       chats.unshift(chat);
       currentChatId = chat.id;
     }
-    chat.messages.push({ role:"user", content:text });
+    const msg = { role:"user", content:text };
+    if(imagePreviewUrl) msg.imagePreview = imagePreviewUrl;
+    chat.messages.push(msg);
     autoTitle(chat);
     saveChats();
     renderHistory(searchInput.value);
@@ -950,7 +995,9 @@
 
     const modelToUse = AI_MODELS.find(m=>m.id===chat.model) || selectedModel || AI_MODELS[0];
     const fileToSend = attachedFile; // dipakai sekali untuk request ini saja
+    const imageToSend = attachedImage;
     clearAttachedFile();
+    clearAttachedImage();
 
     setGenerating(true);
     abortController = new AbortController();
@@ -969,7 +1016,7 @@
     scrollToBottom();
 
     try{
-      const reply = await sendToAI(chat.messages, modelToUse, fileToSend);
+      const reply = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend);
 
       // Ganti indikator typing dengan bubble kosong, lalu ketik bertahap (efek streaming)
       typingWrap.innerHTML = `
@@ -984,6 +1031,7 @@
       chat.messages.push({ role:"assistant", content: reply });
       saveChats();
       renderChat();
+      if(settings.ttsEnabled) speakText(reply);
     } catch(err){
       typingWrap.remove();
       const errWrap = document.createElement("div");
@@ -1031,7 +1079,7 @@
   }
 
   // ---------- API Call (lewat Google Apps Script proxy) ----------
-  async function sendToAI(messages, model, fileContext){
+  async function sendToAI(messages, model, fileContext, imageContext){
     const controller = abortController;
 
     const payload = {
@@ -1042,6 +1090,9 @@
     };
     if(fileContext){
       payload.fileContext = { name: fileContext.name, content: fileContext.content };
+    }
+    if(imageContext){
+      payload.imageContext = { name: imageContext.name, mimeType: imageContext.mimeType, dataBase64: imageContext.dataBase64 };
     }
 
     const response = await fetch(BACKEND_URL, {
@@ -1079,11 +1130,15 @@
       return;
     }
     const text = messageInput.value.trim();
-    if(!text && !attachedFile) return;
-    const finalText = text || `Tolong analisis file "${attachedFile.name}" yang saya lampirkan.`;
+    if(!text && !attachedFile && !attachedImage) return;
+    let finalText = text;
+    if(!finalText){
+      if(attachedImage) finalText = `Tolong analisis gambar "${attachedImage.name}" yang saya lampirkan.`;
+      else finalText = `Tolong analisis file "${attachedFile.name}" yang saya lampirkan.`;
+    }
     messageInput.value = "";
     autoResize();
-    addUserMessage(finalText);
+    addUserMessage(finalText, attachedImage ? attachedImage.previewUrl : null);
     runAssistantResponse();
   }
 
@@ -1098,25 +1153,53 @@
   });
   sendBtn.addEventListener("click", handleSend);
 
-  // ---------- File attach ----------
+  // ---------- File & Image attach ----------
   function renderFilePreview(){
-    if(!attachedFile){
-      filePreviewArea.innerHTML = "";
-      return;
+    const chips = [];
+    if(attachedFile){
+      chips.push(`
+        <div class="file-chip" data-kind="file">
+          <span class="file-chip-icon">📄</span>
+          <span class="file-chip-name">${escapeHtml(attachedFile.name)}</span>
+          <button class="file-chip-remove" id="removeFileBtn" title="Hapus lampiran">✕</button>
+        </div>`);
     }
-    filePreviewArea.innerHTML = `
-      <div class="file-chip">
-        <span class="file-chip-icon">📄</span>
-        <span class="file-chip-name">${escapeHtml(attachedFile.name)}</span>
-        <button class="file-chip-remove" id="removeFileBtn" title="Hapus lampiran">✕</button>
-      </div>`;
-    document.getElementById("removeFileBtn").addEventListener("click", clearAttachedFile);
+    if(attachedImage){
+      chips.push(`
+        <div class="file-chip image-chip" data-kind="image">
+          <img src="${attachedImage.previewUrl}" alt="preview">
+          <span class="file-chip-name">${escapeHtml(attachedImage.name)}</span>
+          <button class="file-chip-remove" id="removeImageBtn" title="Hapus lampiran">✕</button>
+        </div>`);
+    }
+    filePreviewArea.innerHTML = chips.join("");
+    if(attachedFile){
+      document.getElementById("removeFileBtn").addEventListener("click", clearAttachedFile);
+    }
+    if(attachedImage){
+      document.getElementById("removeImageBtn").addEventListener("click", clearAttachedImage);
+    }
   }
 
   function clearAttachedFile(){
     attachedFile = null;
     fileInput.value = "";
     renderFilePreview();
+  }
+
+  function clearAttachedImage(){
+    attachedImage = null;
+    imageInput.value = "";
+    renderFilePreview();
+  }
+
+  function readFileAsDataUrl(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   }
 
   function readFileAsText(file){
@@ -1144,6 +1227,142 @@
       renderFilePreview();
     }catch(err){
       alert("Gagal membaca file: " + (err.message || "kesalahan tidak diketahui"));
+    }
+  });
+
+  imageAttachBtn.addEventListener("click", ()=> imageInput.click());
+  imageInput.addEventListener("change", async ()=>{
+    const file = imageInput.files[0];
+    if(!file) return;
+    const maxSize = 4 * 1024 * 1024; // 4MB, batas wajar untuk base64 lewat Apps Script
+    if(file.size > maxSize){
+      alert("Ukuran gambar terlalu besar (maksimal 4MB).");
+      imageInput.value = "";
+      return;
+    }
+    try{
+      const dataUrl = await readFileAsDataUrl(file);
+      const dataBase64 = dataUrl.split(",")[1];
+      attachedImage = { name: file.name, mimeType: file.type || "image/jpeg", dataBase64: dataBase64, previewUrl: dataUrl };
+      renderFilePreview();
+    }catch(err){
+      alert("Gagal membaca gambar: " + (err.message || "kesalahan tidak diketahui"));
+    }
+  });
+
+  // ---------- Voice input (Web Speech API) ----------
+  function initSpeechRecognition(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return null;
+    const r = new SR();
+    r.lang = "id-ID";
+    r.continuous = false;
+    r.interimResults = true;
+    r.onresult = (e)=>{
+      let transcript = "";
+      for(let i=0; i<e.results.length; i++){
+        transcript += e.results[i][0].transcript;
+      }
+      messageInput.value = transcript;
+      autoResize();
+    };
+    r.onend = ()=>{
+      isListening = false;
+      voiceBtn.classList.remove("listening");
+    };
+    r.onerror = ()=>{
+      isListening = false;
+      voiceBtn.classList.remove("listening");
+    };
+    return r;
+  }
+
+  voiceBtn.addEventListener("click", ()=>{
+    if(!recognition) recognition = initSpeechRecognition();
+    if(!recognition){
+      alert("Browser ini tidak mendukung input suara (Web Speech API). Coba gunakan Chrome.");
+      return;
+    }
+    if(isListening){
+      recognition.stop();
+      isListening = false;
+      voiceBtn.classList.remove("listening");
+    }else{
+      try{
+        recognition.start();
+        isListening = true;
+        voiceBtn.classList.add("listening");
+      }catch(err){
+        // sudah berjalan / error start
+      }
+    }
+  });
+
+  // ---------- Text-to-Speech ----------
+  function speakText(text){
+    if(!("speechSynthesis" in window)) {
+      alert("Browser ini tidak mendukung Text-to-Speech.");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const plain = text.replace(/```[\s\S]*?```/g, " kode diabaikan ").replace(/[*_`#]/g, "");
+    const utter = new SpeechSynthesisUtterance(plain);
+    utter.lang = "id-ID";
+    window.speechSynthesis.speak(utter);
+  }
+
+  ttsToggle.addEventListener("click", ()=>{
+    settings.ttsEnabled = !settings.ttsEnabled;
+    ttsToggle.classList.toggle("on", settings.ttsEnabled);
+    saveSettings();
+  });
+
+  // ---------- Export / Import chat ----------
+  exportChatBtn.addEventListener("click", ()=>{
+    const dataStr = JSON.stringify({ chats: chats, exportedAt: new Date().toISOString() }, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "jeffrey-ai-chats-" + new Date().toISOString().slice(0,10) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  importChatBtn.addEventListener("click", ()=> importChatInput.click());
+  importChatInput.addEventListener("change", async ()=>{
+    const file = importChatInput.files[0];
+    if(!file) return;
+    try{
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const importedChats = Array.isArray(parsed) ? parsed : (parsed.chats || []);
+      if(!Array.isArray(importedChats) || importedChats.length === 0){
+        alert("File tidak berisi riwayat chat yang valid.");
+        return;
+      }
+      // Beri id baru agar tidak bentrok dengan chat yang sudah ada
+      const remapped = importedChats.map(c=>({
+        id: uid(),
+        title: c.title || "Percakapan Impor",
+        messages: Array.isArray(c.messages) ? c.messages : [],
+        model: c.model || (selectedModel ? selectedModel.id : null),
+        createdAt: c.createdAt || Date.now()
+      }));
+      chats = remapped.concat(chats);
+      saveChats();
+      renderHistory();
+      if(remapped.length){
+        currentChatId = remapped[0].id;
+        renderChat();
+      }
+      importChatInput.value = "";
+      alert("Berhasil mengimpor " + remapped.length + " percakapan.");
+      settingsModal.classList.remove("show");
+    }catch(err){
+      alert("Gagal mengimpor file: " + (err.message || "format tidak valid"));
     }
   });
 
@@ -1240,6 +1459,7 @@
     loadChats();
     applyTheme();
     enterToggle.classList.toggle("on", settings.enterToSend);
+    ttsToggle.classList.toggle("on", settings.ttsEnabled);
 
     modelBtn.title = "Memuat model...";
     statusText.textContent = "Menghubungi server...";
