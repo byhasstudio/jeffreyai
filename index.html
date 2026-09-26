@@ -424,6 +424,42 @@
   }
   .prompt-preset-chip:hover{background:var(--bg-3); border-color:var(--accent); transform:translateY(-1px);}
 
+  /* ---------- Force Update overlay ---------- */
+  #forceUpdateOverlay{
+    position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center;
+    background:rgba(10,10,14,0.72); backdrop-filter:blur(6px); opacity:0; transition:opacity .35s var(--ease);
+  }
+  #forceUpdateOverlay.show{ opacity:1; }
+  .fu-card{
+    display:flex; flex-direction:column; align-items:center; gap:18px; padding:36px 40px; border-radius:20px;
+    background:var(--bg); box-shadow:0 20px 60px rgba(0,0,0,0.4); transform:scale(.9) translateY(10px);
+    transition:transform .4s var(--ease); text-align:center; max-width:320px;
+  }
+  #forceUpdateOverlay.show .fu-card{ transform:scale(1) translateY(0); }
+  .fu-ring{
+    width:74px; height:74px; border-radius:50%; position:relative;
+    background:conic-gradient(var(--accent) var(--fu-progress,0%), var(--bg-3) 0);
+    display:flex; align-items:center; justify-content:center;
+    transition:background .25s linear;
+  }
+  .fu-ring::before{
+    content:""; position:absolute; inset:6px; border-radius:50%; background:var(--bg);
+  }
+  .fu-ring-icon{ position:relative; font-size:26px; animation:fuSpin 1.6s linear infinite; }
+  @keyframes fuSpin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .fu-title{ font-size:16px; font-weight:700; color:var(--text); }
+  .fu-sub{ font-size:13px; color:var(--text-2); line-height:1.5; }
+  .fu-progress-text{ font-size:12px; font-weight:600; color:var(--accent); }
+
+  .fu-admin-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    padding:10px 14px; border-radius:10px; border:1px solid var(--accent); color:#fff; cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); font-size:13.5px; font-weight:600;
+    transition:transform .15s var(--ease), box-shadow .15s var(--ease), opacity .15s var(--ease);
+  }
+  .fu-admin-btn:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(16,163,127,0.35); }
+  .fu-admin-btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; box-shadow:none; }
+
   @media (max-width:768px){
     .sidebar{position:fixed; z-index:50; height:100vh; transform:translateX(-100%); box-shadow:var(--shadow-lg);}
     .sidebar.open{transform:translateX(0);}
@@ -729,6 +765,13 @@
           <div class="settings-row-label">Keluar dari akun</div>
           <button class="btn-danger-outline" id="logoutBtn">Logout</button>
         </div>
+        <div class="settings-row" id="forceUpdateRow" style="display:none; flex-direction:column; align-items:stretch; gap:8px;">
+          <div>
+            <div class="settings-row-label">Update Paksa Semua Perangkat</div>
+            <div class="settings-row-sub">Memaksa semua device reload ke versi terbaru saat ini juga.</div>
+          </div>
+          <button class="fu-admin-btn" id="triggerForceUpdateBtn">🚀 Update Paksa Sekarang</button>
+        </div>
       </div>
       <div class="settings-section">
         <h3>AI</h3>
@@ -745,6 +788,14 @@
   </div>
 </div>
 
+<div id="forceUpdateOverlay">
+  <div class="fu-card">
+    <div class="fu-ring" id="fuRing"><span class="fu-ring-icon">⟳</span></div>
+    <div class="fu-title">Menginstall pembaruan...</div>
+    <div class="fu-sub">Aplikasi sedang diperbarui ke versi terbaru. Mohon tunggu sebentar, jangan tutup halaman ini.</div>
+    <div class="fu-progress-text" id="fuProgressText">0%</div>
+  </div>
+</div>
 <script>
 (function(){
   "use strict";
@@ -846,6 +897,15 @@
   const authTabLogin = document.getElementById("authTabLogin");
   const authTabSignup = document.getElementById("authTabSignup");
   const settingsUsername = document.getElementById("settingsUsername");
+  const forceUpdateRow = document.getElementById("forceUpdateRow");
+  const triggerForceUpdateBtn = document.getElementById("triggerForceUpdateBtn");
+  const forceUpdateOverlay = document.getElementById("forceUpdateOverlay");
+  const fuRing = document.getElementById("fuRing");
+  const fuProgressText = document.getElementById("fuProgressText");
+  const FORCEUPDATE_ADMIN_USERNAME = "roma";
+  let localAppVersion = 0;
+  let forceUpdatePollTimer = null;
+  let forceUpdateTriggered = false;
   const logoutBtn = document.getElementById("logoutBtn");
   const syncDataBtn = document.getElementById("syncDataBtn");
   const syncStatusText = document.getElementById("syncStatusText");
@@ -1990,6 +2050,17 @@
       authConfirmPassword.value = "";
       hideAuthOverlay();
       settingsUsername.textContent = session.username;
+      updateForceUpdateVisibility();
+
+      // Buang riwayat chat lokal dari sesi SEBELUM login (mis. belum login lalu sempat chat/klik
+      // preset di browser yang sama) supaya tidak nyangkut/ketampil seolah "terkirim otomatis"
+      // begitu akun baru login. Riwayat resmi akun akan ditarik oleh pullDataFromServer() di bawah.
+      chats = [];
+      currentChatId = null;
+      saveChats();
+      renderHistory();
+      renderChat();
+
       // Ambil data (chat + settings) dari server setelah login/daftar
       await pullDataFromServer();
     }catch(err){
@@ -2078,6 +2149,14 @@
       try{ await callBackend({ action: "logout", token: session.token }); }catch(e){}
     }
     clearSession();
+    updateForceUpdateVisibility();
+    // Bersihkan riwayat chat lokal juga, supaya akun lain yang login di browser yang sama
+    // tidak melihat sisa riwayat chat akun sebelumnya.
+    chats = [];
+    currentChatId = null;
+    saveChats();
+    renderHistory();
+    renderChat();
     settingsModal.classList.remove("show");
     authMode = "login";
     applyAuthMode();
@@ -2164,6 +2243,85 @@
   // ---------- New chat ----------
   newChatBtn.addEventListener("click", createNewChat);
 
+  // ---------- Force Update ----------
+  function updateForceUpdateVisibility(){
+    const isAdmin = session && session.username && session.username.toLowerCase() === FORCEUPDATE_ADMIN_USERNAME;
+    forceUpdateRow.style.display = isAdmin ? "flex" : "none";
+  }
+
+  function playForceUpdateAnimation(){
+    forceUpdateOverlay.style.display = "flex";
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=> forceUpdateOverlay.classList.add("show"));
+    });
+    let pct = 0;
+    const duration = 2200;
+    const start = Date.now();
+    const tick = ()=>{
+      const elapsed = Date.now() - start;
+      pct = Math.min(100, Math.round((elapsed/duration)*100));
+      fuRing.style.setProperty("--fu-progress", pct + "%");
+      fuProgressText.textContent = pct + "%";
+      if(pct < 100){
+        requestAnimationFrame(tick);
+      } else {
+        setTimeout(()=> window.location.reload(true), 350);
+      }
+    };
+    requestAnimationFrame(tick);
+  }
+
+  async function checkAppVersion(){
+    try{
+      const data = await callBackend({ action: "getAppVersion" });
+      if(data && typeof data.version === "number"){
+        if(localAppVersion === 0){
+          // Baseline pertama kali load, jangan langsung trigger reload.
+          localAppVersion = data.version;
+          return;
+        }
+        if(data.version > localAppVersion && !forceUpdateTriggered){
+          forceUpdateTriggered = true;
+          if(forceUpdatePollTimer) clearInterval(forceUpdatePollTimer);
+          playForceUpdateAnimation();
+        }
+      }
+    }catch(e){
+      // Diamkan saja kalau gagal polling (misal offline sesaat), coba lagi di interval berikutnya.
+    }
+  }
+
+  function startForceUpdatePolling(){
+    checkAppVersion();
+    if(forceUpdatePollTimer) clearInterval(forceUpdatePollTimer);
+    forceUpdatePollTimer = setInterval(checkAppVersion, 30000);
+  }
+
+  triggerForceUpdateBtn.addEventListener("click", async ()=>{
+    if(!session || !session.token) return;
+    triggerForceUpdateBtn.disabled = true;
+    const originalLabel = triggerForceUpdateBtn.innerHTML;
+    triggerForceUpdateBtn.textContent = "Memicu update...";
+    try{
+      const data = await callBackend({ action: "triggerForceUpdate", token: session.token });
+      if(data.error){
+        alert(data.error);
+        triggerForceUpdateBtn.disabled = false;
+        triggerForceUpdateBtn.innerHTML = originalLabel;
+        return;
+      }
+      triggerForceUpdateBtn.textContent = "✅ Terkirim ke semua perangkat";
+      setTimeout(()=>{
+        triggerForceUpdateBtn.disabled = false;
+        triggerForceUpdateBtn.innerHTML = originalLabel;
+      }, 3000);
+    }catch(e){
+      alert("Gagal memicu update paksa. Coba lagi.");
+      triggerForceUpdateBtn.disabled = false;
+      triggerForceUpdateBtn.innerHTML = originalLabel;
+    }
+  });
+
   // ---------- Init ----------
   async function init(){
     loadSession();
@@ -2173,6 +2331,9 @@
     } else {
       settingsUsername.textContent = session.username;
     }
+
+    updateForceUpdateVisibility();
+    startForceUpdatePolling();
 
     loadSettings();
     loadChats();
