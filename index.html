@@ -237,6 +237,24 @@
   .msg.user .msg-content :not(pre) > code{background:rgba(255,255,255,0.2); color:#fff;}
   .msg.user .msg-actions{justify-content:flex-end;}
 
+  #filePreviewArea{max-width:760px; margin:0 auto; padding:0 0 8px;}
+  .file-chip{
+    display:inline-flex; align-items:center; gap:8px; padding:7px 10px 7px 12px; border-radius:12px;
+    border:1px solid var(--border); background:var(--bg-2); font-size:12.5px; color:var(--text);
+    animation:popIn .25s var(--ease-spring);
+  }
+  .file-chip .file-chip-icon{font-size:15px;}
+  .file-chip .file-chip-name{max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600;}
+  .file-chip .file-chip-remove{
+    background:none; border:none; color:var(--text-2); cursor:pointer; padding:2px 4px; border-radius:6px; font-size:13px;
+    transition:background .15s var(--ease), color .15s var(--ease);
+  }
+  .file-chip .file-chip-remove:hover{background:var(--bg-3); color:var(--danger);}
+  .attachment-tag{
+    display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:10px; background:rgba(16,163,127,0.12);
+    color:var(--accent); font-size:11.5px; font-weight:600; margin-bottom:6px;
+  }
+
   .typing{display:flex; gap:4px; padding:8px 0;}
   .typing span{width:7px; height:7px; border-radius:50%; background:var(--accent); animation:bounceDot 1.3s infinite ease-in-out;}
   .typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
@@ -397,6 +415,7 @@
     <div class="input-area">
       <div class="input-inner">
         <div id="configWarning"></div>
+        <div id="filePreviewArea"></div>
         <div class="input-box">
           <div class="model-select-wrap">
             <button class="model-btn" id="modelBtn" title="Pilih model">
@@ -404,6 +423,10 @@
             </button>
             <div class="model-dropdown" id="modelDropdown"></div>
           </div>
+          <button class="model-btn" id="attachBtn" title="Lampirkan file">
+            <span>📎</span>
+          </button>
+          <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.js,.py,.html,.css,.log" hidden>
           <textarea id="messageInput" placeholder="Kirim pesan ke Jeffrey AI..." rows="1"></textarea>
           <button class="send-btn" id="sendBtn">➤</button>
         </div>
@@ -447,6 +470,20 @@
         </div>
       </div>
       <div class="settings-section">
+        <h3>Persona AI</h3>
+        <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+          <div>
+            <div class="settings-row-label">Instruksi sistem (system prompt)</div>
+            <div class="settings-row-sub">Atur gaya bicara, peran, atau batasan Jeffrey AI untuk semua chat.</div>
+          </div>
+          <textarea id="systemPromptInput" placeholder="Contoh: Kamu adalah asisten ramah yang menjawab singkat dan padat dalam Bahasa Indonesia." style="width:100%; min-height:80px; border-radius:11px; border:1px solid var(--border); padding:10px; background:var(--bg); color:var(--text); font-size:13.5px; font-family:inherit; resize:vertical;"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn-danger-outline" id="resetPersonaBtn" style="border-color:var(--border); color:var(--text-2);">Reset</button>
+            <button class="btn-save-edit" id="savePersonaBtn" style="border-radius:9px; padding:7px 16px;">Simpan</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
         <h3>AI</h3>
         <div class="settings-row">
           <div class="settings-row-label">Model aktif</div>
@@ -480,6 +517,7 @@
   let isGenerating = false;
   let abortController = null;
   let editingMessageIndex = null;
+  let attachedFile = null;   // {name, content} - file yang sedang dilampirkan ke pesan berikutnya
 
   const STORAGE_KEY = "jeffrey_ai_chats";
   const SETTINGS_KEY = "jeffrey_ai_settings";
@@ -509,8 +547,15 @@
   const clearHistoryBtn = document.getElementById("clearHistoryBtn");
   const settingsModelName = document.getElementById("settingsModelName");
   const settingsApiStatus = document.getElementById("settingsApiStatus");
+  const attachBtn = document.getElementById("attachBtn");
+  const fileInput = document.getElementById("fileInput");
+  const filePreviewArea = document.getElementById("filePreviewArea");
+  const systemPromptInput = document.getElementById("systemPromptInput");
+  const savePersonaBtn = document.getElementById("savePersonaBtn");
+  const resetPersonaBtn = document.getElementById("resetPersonaBtn");
 
-  let settings = { theme:"system", enterToSend:true };
+  let settings = { theme:"system", enterToSend:true, systemPrompt:"" };
+
 
   // ---------- Utils ----------
   function escapeHtml(str){
@@ -904,6 +949,8 @@
     }
 
     const modelToUse = AI_MODELS.find(m=>m.id===chat.model) || selectedModel || AI_MODELS[0];
+    const fileToSend = attachedFile; // dipakai sekali untuk request ini saja
+    clearAttachedFile();
 
     setGenerating(true);
     abortController = new AbortController();
@@ -922,8 +969,18 @@
     scrollToBottom();
 
     try{
-      const reply = await sendToAI(chat.messages, modelToUse);
-      typingWrap.remove();
+      const reply = await sendToAI(chat.messages, modelToUse, fileToSend);
+
+      // Ganti indikator typing dengan bubble kosong, lalu ketik bertahap (efek streaming)
+      typingWrap.innerHTML = `
+        <div class="msg-avatar">J</div>
+        <div class="msg-body">
+          <div class="msg-role">Jeffrey AI</div>
+          <div class="msg-content" id="streamingContent"></div>
+        </div>`;
+      const streamEl = typingWrap.querySelector("#streamingContent");
+      await typeOutText(streamEl, reply, abortController.signal);
+
       chat.messages.push({ role:"assistant", content: reply });
       saveChats();
       renderChat();
@@ -944,19 +1001,48 @@
     }
   }
 
+  // Efek "streaming": tampilkan teks bertahap per beberapa karakter agar terasa seperti AI generatif real-time.
+  function typeOutText(el, fullText, signal){
+    return new Promise((resolve)=>{
+      const rendered = renderMarkdown(fullText);
+      // Untuk teks panjang/berisi code block, langsung render markdown final agar tidak merusak tag HTML saat "diketik".
+      // Efek ketik diterapkan pada representasi teks polos, baru di akhir diganti dengan versi markdown penuh.
+      let i = 0;
+      const step = Math.max(1, Math.round(fullText.length / 120)); // ~120 frame total
+      function tick(){
+        if(signal && signal.aborted){ el.innerHTML = rendered; scrollToBottom(); resolve(); return; }
+        i += step;
+        if(i >= fullText.length){
+          el.innerHTML = rendered;
+          scrollToBottom();
+          resolve();
+          return;
+        }
+        el.textContent = fullText.slice(0, i);
+        scrollToBottom();
+        requestAnimationFrame(()=> setTimeout(tick, 12));
+      }
+      tick();
+    });
+  }
+
   function friendlyError(err){
     return (err && err.message) ? err.message : "Kesalahan tidak diketahui.";
   }
 
   // ---------- API Call (lewat Google Apps Script proxy) ----------
-  async function sendToAI(messages, model){
+  async function sendToAI(messages, model, fileContext){
     const controller = abortController;
 
     const payload = {
       action: "chat",
       model: model.id,
-      messages: messages.map(m=>({ role: m.role, content: m.content }))
+      messages: messages.map(m=>({ role: m.role, content: m.content })),
+      systemPrompt: settings.systemPrompt || ""
     };
+    if(fileContext){
+      payload.fileContext = { name: fileContext.name, content: fileContext.content };
+    }
 
     const response = await fetch(BACKEND_URL, {
       method: "POST",
@@ -993,10 +1079,11 @@
       return;
     }
     const text = messageInput.value.trim();
-    if(!text) return;
+    if(!text && !attachedFile) return;
+    const finalText = text || `Tolong analisis file "${attachedFile.name}" yang saya lampirkan.`;
     messageInput.value = "";
     autoResize();
-    addUserMessage(text);
+    addUserMessage(finalText);
     runAssistantResponse();
   }
 
@@ -1010,6 +1097,55 @@
     }
   });
   sendBtn.addEventListener("click", handleSend);
+
+  // ---------- File attach ----------
+  function renderFilePreview(){
+    if(!attachedFile){
+      filePreviewArea.innerHTML = "";
+      return;
+    }
+    filePreviewArea.innerHTML = `
+      <div class="file-chip">
+        <span class="file-chip-icon">📄</span>
+        <span class="file-chip-name">${escapeHtml(attachedFile.name)}</span>
+        <button class="file-chip-remove" id="removeFileBtn" title="Hapus lampiran">✕</button>
+      </div>`;
+    document.getElementById("removeFileBtn").addEventListener("click", clearAttachedFile);
+  }
+
+  function clearAttachedFile(){
+    attachedFile = null;
+    fileInput.value = "";
+    renderFilePreview();
+  }
+
+  function readFileAsText(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  }
+
+  attachBtn.addEventListener("click", ()=> fileInput.click());
+  fileInput.addEventListener("change", async ()=>{
+    const file = fileInput.files[0];
+    if(!file) return;
+    const maxSize = 2 * 1024 * 1024; // 2MB, batas wajar untuk dibaca sebagai teks
+    if(file.size > maxSize){
+      alert("Ukuran file terlalu besar (maksimal 2MB). Gunakan file teks yang lebih kecil.");
+      fileInput.value = "";
+      return;
+    }
+    try{
+      const content = await readFileAsText(file);
+      attachedFile = { name: file.name, content: content };
+      renderFilePreview();
+    }catch(err){
+      alert("Gagal membaca file: " + (err.message || "kesalahan tidak diketahui"));
+    }
+  });
 
   document.querySelectorAll(".suggestion-card").forEach(card=>{
     card.addEventListener("click", ()=>{
@@ -1043,7 +1179,10 @@
   });
 
   // ---------- Settings modal ----------
-  settingsBtn.addEventListener("click", ()=> settingsModal.classList.add("show"));
+  settingsBtn.addEventListener("click", ()=>{
+    systemPromptInput.value = settings.systemPrompt || "";
+    settingsModal.classList.add("show");
+  });
   closeSettings.addEventListener("click", ()=> settingsModal.classList.remove("show"));
   settingsModal.addEventListener("click", (e)=>{ if(e.target === settingsModal) settingsModal.classList.remove("show"); });
 
@@ -1058,6 +1197,19 @@
   enterToggle.addEventListener("click", ()=>{
     settings.enterToSend = !settings.enterToSend;
     enterToggle.classList.toggle("on", settings.enterToSend);
+    saveSettings();
+  });
+
+  savePersonaBtn.addEventListener("click", ()=>{
+    settings.systemPrompt = systemPromptInput.value.trim();
+    saveSettings();
+    savePersonaBtn.textContent = "Tersimpan ✓";
+    setTimeout(()=>{ savePersonaBtn.textContent = "Simpan"; }, 1500);
+  });
+
+  resetPersonaBtn.addEventListener("click", ()=>{
+    systemPromptInput.value = "";
+    settings.systemPrompt = "";
     saveSettings();
   });
 
