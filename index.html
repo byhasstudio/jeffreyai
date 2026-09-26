@@ -224,6 +224,19 @@
   .btn-save-edit{background:var(--accent); color:#fff;}
   .btn-cancel-edit{background:var(--bg-3); color:var(--text);}
 
+  /* Bubble untuk pesan pengguna - rata kanan, tanpa avatar/label */
+  .msg.user{flex-direction:row-reverse; text-align:right;}
+  .msg.user .msg-body{flex:0 1 auto; max-width:78%; margin-left:auto;}
+  .msg.user .msg-avatar{display:none;}
+  .msg.user .msg-role{display:none;}
+  .msg.user .msg-content{
+    background:var(--bubble-user) !important; color:var(--bubble-user-text) !important;
+    padding:10px 15px; border-radius:18px 18px 4px 18px; display:inline-block; text-align:left; white-space:pre-wrap;
+  }
+  .msg.user .msg-content p{margin-bottom:0;}
+  .msg.user .msg-content :not(pre) > code{background:rgba(255,255,255,0.2); color:#fff;}
+  .msg.user .msg-actions{justify-content:flex-end;}
+
   .typing{display:flex; gap:4px; padding:8px 0;}
   .typing span{width:7px; height:7px; border-radius:50%; background:var(--accent); animation:bounceDot 1.3s infinite ease-in-out;}
   .typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
