@@ -778,6 +778,7 @@
   let isListening = false;
 
   const STORAGE_KEY = "jeffrey_ai_chats";
+  const CHATS_OWNER_KEY = "jeffrey_ai_chats_owner"; // catat username pemilik data localStorage saat ini
   const SETTINGS_KEY = "jeffrey_ai_settings";
 
   // ---------- DOM ----------
@@ -914,10 +915,22 @@
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
   function saveChats(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(chats)); }catch(e){ console.error("Gagal menyimpan riwayat:", e); }
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+      // Catat pemilik data ini, supaya akun lain yang login di browser yang sama tidak ikut membaca riwayat ini.
+      localStorage.setItem(CHATS_OWNER_KEY, session ? session.username : "");
+    }catch(e){ console.error("Gagal menyimpan riwayat:", e); }
   }
   function loadChats(){
     try{
+      const owner = localStorage.getItem(CHATS_OWNER_KEY) || "";
+      const currentUser = session ? session.username : "";
+      if(owner !== currentUser){
+        // Data localStorage ini milik akun lain (atau belum ada pemiliknya) -> jangan dipakai,
+        // kosongkan dulu sambil menunggu data yang benar diambil dari server (pullDataFromServer).
+        chats = [];
+        return;
+      }
       const raw = localStorage.getItem(STORAGE_KEY);
       chats = raw ? JSON.parse(raw) : [];
     }catch(e){ chats = []; }
@@ -2063,6 +2076,10 @@
       try{ await callBackend({ action: "logout", token: session.token }); }catch(e){}
     }
     clearSession();
+    chats = [];
+    currentChatId = null;
+    renderHistory();
+    renderChat();
     settingsModal.classList.remove("show");
     authMode = "login";
     applyAuthMode();
