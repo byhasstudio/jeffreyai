@@ -143,6 +143,52 @@
   }
   .model-option:hover{background:var(--bg-3); padding-left:18px;}
   .model-option.selected{color:var(--accent); font-weight:600;}
+  .model-option-name{font-weight:600;}
+  .model-option-desc{font-size:11.5px; color:var(--text-2); margin-top:1px;}
+  .model-option-check{color:var(--accent); font-size:13px; margin-left:8px; flex-shrink:0;}
+
+  .effort-btn{
+    display:flex; align-items:center; gap:5px; height:34px; padding:0 12px; border-radius:17px;
+    border:1px solid var(--border); background:var(--bg-2); color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer;
+    transition:background .18s var(--ease), border-color .18s var(--ease), box-shadow .18s var(--ease);
+  }
+  .effort-btn:hover{background:var(--bg-3); border-color:var(--accent);}
+  .effort-btn.open{border-color:var(--accent); box-shadow:var(--accent-glow);}
+  .effort-dropdown{
+    position:absolute; bottom:calc(100% + 8px); left:0; min-width:200px; background:var(--bg);
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-lg); z-index:50;
+    overflow:hidden; opacity:0; transform:translateY(8px) scale(.97); pointer-events:none;
+    transition:opacity .18s var(--ease), transform .18s var(--ease); transform-origin:bottom left;
+  }
+  .effort-dropdown.open{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+  .effort-option{
+    padding:10px 14px; cursor:pointer; font-size:13.5px; display:flex; justify-content:space-between; align-items:center;
+    transition:background .15s var(--ease), padding-left .15s var(--ease);
+  }
+  .effort-option:hover{background:var(--bg-3); padding-left:18px;}
+  .effort-option.selected{color:var(--accent); font-weight:600;}
+
+  .thinking-block{
+    margin-bottom:10px; border:1px solid var(--border); border-radius:12px; background:var(--bg-2);
+    overflow:hidden; animation:fadeIn .3s var(--ease);
+  }
+  .thinking-header{
+    display:flex; align-items:center; gap:8px; padding:9px 13px; cursor:pointer; font-size:13px; color:var(--text-2);
+    user-select:none; transition:background .15s var(--ease);
+  }
+  .thinking-header:hover{background:var(--bg-3);}
+  .thinking-header .think-icon{animation:pulseThink 1.4s ease-in-out infinite;}
+  .thinking-block.done .thinking-header .think-icon{animation:none;}
+  .thinking-header .think-chevron{margin-left:auto; transition:transform .2s var(--ease); font-size:11px;}
+  .thinking-block.expanded .think-chevron{transform:rotate(180deg);}
+  .thinking-body{
+    max-height:0; overflow:hidden; transition:max-height .3s var(--ease);
+    padding:0 13px; font-size:12.5px; color:var(--text-2); line-height:1.55; border-top:1px solid transparent;
+    white-space:pre-wrap;
+  }
+  .thinking-block.expanded .thinking-body{max-height:400px; overflow-y:auto; padding:4px 13px 12px; border-top-color:var(--border);}
+  @keyframes pulseThink{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
+
   .api-status{margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-2);}
   .status-dot{width:7px; height:7px; border-radius:50%; background:#ccc; transition:background .3s var(--ease);}
   .status-dot.ok{background:#22c55e; animation:glowPulse 2.2s ease-out infinite;}
@@ -398,46 +444,70 @@
   .auth-screen{
     position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
     padding:24px; background:radial-gradient(circle at 50% -10%, #123a30, #06110e 70%);
-    overflow-y:auto;
+    overflow-y:auto; opacity:0; pointer-events:none; transition:opacity .35s var(--ease);
   }
+  .auth-screen.show{opacity:1; pointer-events:auto;}
   .auth-card{
     width:100%; max-width:420px; background:linear-gradient(180deg, #10281f, #0b1e17);
     border:1px solid rgba(255,255,255,0.06); border-radius:28px; padding:34px 28px 28px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.45); position:relative; animation:scaleIn .35s var(--ease);
+    box-shadow:0 20px 60px rgba(0,0,0,0.45); position:relative;
+    transform:scale(.92) translateY(14px); opacity:0;
+    transition:transform .4s var(--ease-spring), opacity .3s var(--ease);
   }
+  .auth-screen.show .auth-card{transform:scale(1) translateY(0); opacity:1;}
   .auth-logo-bubble{
     width:56px; height:56px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg,#1f9d76,#0891b2); box-shadow:0 8px 24px rgba(16,163,127,0.4); font-size:24px; color:#fff;
+    animation:floatLogo 4s ease-in-out infinite;
   }
   .auth-brand{text-align:center; font-size:28px; font-weight:800; color:#6ee7b7; letter-spacing:-.02em; margin-bottom:4px;}
   .auth-subtitle{text-align:center; font-size:12.5px; letter-spacing:.12em; color:#9fb8ac; font-weight:700; margin-bottom:26px; text-transform:uppercase;}
   .auth-tabs{
-    display:flex; background:rgba(255,255,255,0.04); border-radius:14px; padding:4px; margin-bottom:22px; gap:4px;
+    position:relative; display:flex; background:rgba(255,255,255,0.04); border-radius:14px; padding:4px; margin-bottom:22px; gap:4px;
   }
+  .auth-tabs::before{
+    content:""; position:absolute; top:4px; left:4px; width:calc(50% - 4px); height:calc(100% - 8px);
+    background:linear-gradient(135deg,#1f9d76,#17a589); border-radius:11px; box-shadow:0 4px 14px rgba(16,163,127,0.35);
+    transition:transform .32s var(--ease-spring); z-index:0;
+  }
+  .auth-tabs.mode-signup::before{transform:translateX(100%);}
   .auth-tab{
-    flex:1; padding:11px 10px; border-radius:11px; border:none; background:transparent; color:#9fb8ac;
+    position:relative; z-index:1; flex:1; padding:11px 10px; border-radius:11px; border:none; background:transparent; color:#9fb8ac;
     font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
-    transition:background .2s var(--ease), color .2s var(--ease);
+    transition:color .25s var(--ease);
   }
-  .auth-tab.active{background:linear-gradient(135deg,#1f9d76,#17a589); color:#fff; box-shadow:0 4px 14px rgba(16,163,127,0.35);}
-  .auth-field{position:relative; margin-bottom:14px;}
+  .auth-tab.active{color:#fff;}
+  .auth-field{position:relative; margin-bottom:14px; animation:fadeInUp .35s var(--ease) backwards;}
   .auth-field-icon{
     position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#6b8c7e; font-size:15px; pointer-events:none;
+    transition:color .2s var(--ease);
   }
   .auth-field input{
     width:100%; padding:14px 16px 14px 44px; border-radius:14px; border:1px solid rgba(255,255,255,0.08);
     background:rgba(255,255,255,0.03); color:#eafff4; font-size:14.5px; outline:none;
-    transition:border-color .2s var(--ease), background .2s var(--ease);
+    transition:border-color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
   }
   .auth-field input::placeholder{color:#5f7d70;}
-  .auth-field input:focus{border-color:#1f9d76; background:rgba(255,255,255,0.05);}
+  .auth-field input:focus{border-color:#1f9d76; background:rgba(255,255,255,0.05); box-shadow:0 0 0 4px rgba(16,163,127,0.12);}
+  .auth-field input:focus ~ .auth-field-icon{color:#1f9d76;}
   .auth-field-eye{
     position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; color:#6b8c7e; font-size:15px;
-    background:none; border:none; padding:4px;
+    background:none; border:none; padding:4px; transition:color .2s var(--ease), transform .15s var(--ease-spring);
   }
+  .auth-field-eye:hover{color:#eafff4; transform:translateY(-50%) scale(1.12);}
+  .auth-confirm-wrap{
+    max-height:0; opacity:0; overflow:hidden; margin-bottom:0;
+    transition:max-height .35s var(--ease), opacity .25s var(--ease), margin-bottom .35s var(--ease);
+  }
+  .auth-confirm-wrap.show{max-height:70px; opacity:1; margin-bottom:14px;}
   .auth-error{
     display:none; color:#ff9494; font-size:13px; margin-bottom:14px; padding:10px 14px;
     background:rgba(229,72,77,0.1); border:1px solid rgba(229,72,77,0.25); border-radius:12px;
+  }
+  .auth-error.show{display:block; animation:authShake .4s var(--ease);}
+  @keyframes authShake{
+    0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(5px);}
+    60%{transform:translateX(-3px);} 80%{transform:translateX(2px);}
   }
   .auth-submit{
     width:100%; padding:15px; border-radius:16px; border:none; cursor:pointer; margin-top:4px;
@@ -457,7 +527,7 @@
     <div class="auth-brand">Jeffrey AI</div>
     <div class="auth-subtitle">Ngobrol Cerdas, Tanpa Basa-basi</div>
 
-    <div class="auth-tabs">
+    <div class="auth-tabs" id="authTabs">
       <button type="button" class="auth-tab" id="authTabLogin">🔒 Masuk</button>
       <button type="button" class="auth-tab" id="authTabSignup">✨ Daftar</button>
     </div>
@@ -473,10 +543,12 @@
       <input type="password" id="authPassword" autocomplete="current-password" placeholder="Password">
       <button type="button" class="auth-field-eye" data-toggle-for="authPassword">👁️</button>
     </div>
-    <div class="auth-field" id="authConfirmWrap" style="display:none;">
-      <span class="auth-field-icon">🔒</span>
-      <input type="password" id="authConfirmPassword" autocomplete="new-password" placeholder="Ulangi Password">
-      <button type="button" class="auth-field-eye" data-toggle-for="authConfirmPassword">👁️</button>
+    <div class="auth-confirm-wrap" id="authConfirmWrap">
+      <div class="auth-field">
+        <span class="auth-field-icon">🔒</span>
+        <input type="password" id="authConfirmPassword" autocomplete="new-password" placeholder="Ulangi Password">
+        <button type="button" class="auth-field-eye" data-toggle-for="authConfirmPassword">👁️</button>
+      </div>
     </div>
 
     <button class="auth-submit" id="authSubmitBtn">🔒 Masuk</button>
@@ -547,6 +619,12 @@
               <span id="modelBtnLabel">✨</span>
             </button>
             <div class="model-dropdown" id="modelDropdown"></div>
+          </div>
+          <div class="model-select-wrap">
+            <button class="effort-btn" id="effortBtn" title="Level upaya">
+              <span id="effortBtnIcon">⚡</span><span id="effortBtnLabel">Sedang</span>
+            </button>
+            <div class="effort-dropdown" id="effortDropdown"></div>
           </div>
           <button class="model-btn attach-icon-btn" id="attachBtn" title="Lampirkan file">
             <span>📎</span>
@@ -715,6 +793,23 @@
   const modelBtn = document.getElementById("modelBtn");
   const modelBtnLabel = document.getElementById("modelBtnLabel");
   const modelDropdown = document.getElementById("modelDropdown");
+  const effortBtn = document.getElementById("effortBtn");
+  const effortBtnIcon = document.getElementById("effortBtnIcon");
+  const effortBtnLabel = document.getElementById("effortBtnLabel");
+  const effortDropdown = document.getElementById("effortDropdown");
+
+  const EFFORT_LEVELS = [
+    { id:"low",    name:"Rendah",  icon:"🌱", desc:"Cepat, jawaban singkat" },
+    { id:"medium", name:"Sedang",  icon:"⚡", desc:"Seimbang (default)" },
+    { id:"high",   name:"Tinggi",  icon:"🔥", desc:"Lebih dalam & teliti" },
+    { id:"extra",  name:"Ekstra",  icon:"💎", desc:"Analisis lebih mendalam" },
+    { id:"max",    name:"Maks",    icon:"🚀", desc:"Paling dalam, lebih lambat" }
+  ];
+  const MODEL_DESCRIPTIONS = {
+    "gemini-3.5-flash-lite": "Paling cepat & ringan",
+    "gemini-3.5-flash": "Seimbang untuk sehari-hari",
+    "gemini-3.8-flash": "Penalaran lebih dalam"
+  };
   const statusDot = document.getElementById("statusDot");
   const statusText = document.getElementById("statusText");
   const chatArea = document.getElementById("chatArea");
@@ -755,6 +850,7 @@
   const authConfirmPassword = document.getElementById("authConfirmPassword");
   const authSubmitBtn = document.getElementById("authSubmitBtn");
   const authTabLogin = document.getElementById("authTabLogin");
+  const authTabs = document.getElementById("authTabs");
   const authTabSignup = document.getElementById("authTabSignup");
   const settingsUsername = document.getElementById("settingsUsername");
   const logoutBtn = document.getElementById("logoutBtn");
@@ -763,7 +859,7 @@
   const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
 
   let settings = {
-    theme:"system", enterToSend:true, ttsEnabled:false, ttsVoiceURI:"", ttsRate:1,
+    theme:"system", enterToSend:true, ttsEnabled:false, ttsVoiceURI:"", ttsRate:1, effort:"medium",
     quickPrompts: ["Ringkas teks ini", "Perbaiki tata bahasa", "Terjemahkan ke Inggris", "Buatkan poin-poin penting"]
   };
 
@@ -889,13 +985,21 @@
       selectedModel = AI_MODELS[0];
     }
     AI_MODELS.forEach(m=>{
+      const isSelected = selectedModel && selectedModel.id === m.id;
       const opt = document.createElement("div");
-      opt.className = "model-option" + (selectedModel && selectedModel.id === m.id ? " selected" : "");
-      opt.textContent = m.name;
+      opt.className = "model-option" + (isSelected ? " selected" : "");
+      const desc = MODEL_DESCRIPTIONS[m.id] || "";
+      opt.innerHTML = `
+        <div>
+          <div class="model-option-name">${escapeHtml(m.name)}</div>
+          ${desc ? `<div class="model-option-desc">${escapeHtml(desc)}</div>` : ""}
+        </div>
+        ${isSelected ? '<span class="model-option-check">✓</span>' : ""}`;
       opt.addEventListener("click", ()=>{
         selectedModel = m;
         modelBtn.title = m.name;
         modelDropdown.classList.remove("open");
+        modelBtn.classList.remove("open");
         renderModelDropdown();
         settingsModelName.textContent = m.name;
         if(currentChatId){
@@ -907,6 +1011,37 @@
     });
     modelBtn.title = selectedModel ? selectedModel.name : "Model";
     settingsModelName.textContent = selectedModel ? selectedModel.name : "-";
+  }
+
+  function renderEffortMenu(){
+    effortDropdown.innerHTML = "";
+    EFFORT_LEVELS.forEach(lvl=>{
+      const isSelected = settings.effort === lvl.id;
+      const opt = document.createElement("div");
+      opt.className = "effort-option" + (isSelected ? " selected" : "");
+      opt.innerHTML = `
+        <div>
+          <div class="model-option-name">${lvl.icon} ${escapeHtml(lvl.name)}</div>
+          <div class="model-option-desc">${escapeHtml(lvl.desc)}</div>
+        </div>
+        ${isSelected ? '<span class="model-option-check">✓</span>' : ""}`;
+      opt.addEventListener("click", ()=>{
+        settings.effort = lvl.id;
+        saveSettings();
+        effortDropdown.classList.remove("open");
+        effortBtn.classList.remove("open");
+        renderEffortMenu();
+        updateEffortBtnLabel();
+      });
+      effortDropdown.appendChild(opt);
+    });
+  }
+
+  function updateEffortBtnLabel(){
+    const lvl = EFFORT_LEVELS.find(l=>l.id===settings.effort) || EFFORT_LEVELS[1];
+    effortBtnIcon.textContent = lvl.icon;
+    effortBtnLabel.textContent = lvl.name;
+    effortBtn.title = "Level upaya: " + lvl.name + " — " + lvl.desc;
   }
 
   function updateApiStatus(){
@@ -1058,6 +1193,14 @@
     }
 
     body.appendChild(roleLabel);
+    if(msg.role === "assistant" && msg.thinking){
+      const thinkWrap = document.createElement("div");
+      thinkWrap.innerHTML = renderThinkingBlockHtml(msg.thinking, false);
+      const tb = thinkWrap.firstElementChild;
+      tb.classList.add("done");
+      body.appendChild(tb);
+      attachThinkingToggle(body);
+    }
     body.appendChild(content);
 
     const actions = document.createElement("div");
@@ -1217,22 +1360,30 @@
     scrollToBottom();
 
     try{
-      const reply = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
+      const result = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
         const typingLabel = typingWrap.querySelector(".msg-role");
         if(typingLabel) typingLabel.textContent = `Jeffrey AI (mencoba lagi ${attempt}/2...)`;
       });
+      const reply = result.reply;
+      const thinking = result.thinking || "";
 
-      // Ganti indikator typing dengan bubble kosong, lalu ketik bertahap (efek streaming)
+      // Ganti indikator typing dengan bubble kosong (+ blok berpikir jika ada), lalu ketik bertahap (efek streaming)
       typingWrap.innerHTML = `
         <div class="msg-avatar">J</div>
         <div class="msg-body">
           <div class="msg-role">Jeffrey AI</div>
+          ${thinking ? renderThinkingBlockHtml(thinking, true) : ""}
           <div class="msg-content" id="streamingContent"></div>
         </div>`;
+      if(thinking) attachThinkingToggle(typingWrap);
       const streamEl = typingWrap.querySelector("#streamingContent");
       await typeOutText(streamEl, reply, abortController.signal);
+      if(thinking){
+        const tb = typingWrap.querySelector(".thinking-block");
+        if(tb) tb.classList.add("done");
+      }
 
-      chat.messages.push({ role:"assistant", content: reply });
+      chat.messages.push({ role:"assistant", content: reply, thinking: thinking });
       saveChats();
       renderChat();
       if(settings.ttsEnabled) speakText(reply);
@@ -1278,6 +1429,26 @@
     });
   }
 
+  function renderThinkingBlockHtml(thinkingText, startExpanded){
+    return `
+      <div class="thinking-block${startExpanded ? " expanded" : ""}">
+        <div class="thinking-header">
+          <span class="think-icon">🤔</span><span>Berpikir...</span><span class="think-chevron">▾</span>
+        </div>
+        <div class="thinking-body">${escapeHtml(thinkingText)}</div>
+      </div>`;
+  }
+
+  function attachThinkingToggle(container){
+    const header = container.querySelector(".thinking-header");
+    const block = container.querySelector(".thinking-block");
+    if(header && block){
+      header.addEventListener("click", ()=>{
+        block.classList.toggle("expanded");
+      });
+    }
+  }
+
   function friendlyError(err){
     return (err && err.message) ? err.message : "Kesalahan tidak diketahui.";
   }
@@ -1290,7 +1461,8 @@
       action: "chat",
       model: model.id,
       messages: messages.map(m=>({ role: m.role, content: m.content })),
-      token: session ? session.token : ""
+      token: session ? session.token : "",
+      effort: settings.effort || "medium"
     };
     if(fileContext){
       payload.fileContext = { name: fileContext.name, content: fileContext.content };
@@ -1331,7 +1503,7 @@
           throw new Error(data.error);
         }
         if(typeof data.reply === "string"){
-          return data.reply;
+          return { reply: data.reply, thinking: (typeof data.thinking === "string" ? data.thinking : ""), quota: data.quota || null };
         }
         throw new Error("Format respons dari Apps Script tidak dikenali.");
       }catch(err){
@@ -1688,7 +1860,17 @@
   document.addEventListener("click", ()=>{
     modelDropdown.classList.remove("open");
     modelBtn.classList.remove("open");
+    effortDropdown.classList.remove("open");
+    effortBtn.classList.remove("open");
   });
+
+  // ---------- Effort dropdown ----------
+  effortBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    effortDropdown.classList.toggle("open");
+    effortBtn.classList.toggle("open", effortDropdown.classList.contains("open"));
+  });
+  effortDropdown.addEventListener("click", (e)=> e.stopPropagation());
 
   // ---------- Settings modal ----------
   settingsBtn.addEventListener("click", ()=>{
@@ -1715,15 +1897,17 @@
 
   // ---------- Auth ----------
   function showAuthOverlay(){
-    authOverlay.style.display = "flex";
+    authOverlay.classList.add("show");
   }
   function hideAuthOverlay(){
-    authOverlay.style.display = "none";
+    authOverlay.classList.remove("show");
   }
   function setAuthError(msg){
-    if(!msg){ authError.style.display = "none"; authError.textContent = ""; return; }
-    authError.style.display = "block";
+    if(!msg){ authError.classList.remove("show"); authError.textContent = ""; return; }
     authError.textContent = msg;
+    authError.classList.remove("show");
+    void authError.offsetWidth; // restart animasi shake tiap kali error baru muncul
+    authError.classList.add("show");
   }
   function applyAuthMode(){
     setAuthError("");
@@ -1733,12 +1917,14 @@
     if(authMode === "login"){
       authTabLogin.classList.add("active");
       authTabSignup.classList.remove("active");
-      authConfirmWrap.style.display = "none";
+      authTabs.classList.remove("mode-signup");
+      authConfirmWrap.classList.remove("show");
       authSubmitBtn.innerHTML = "🔒 Masuk";
     } else {
       authTabSignup.classList.add("active");
       authTabLogin.classList.remove("active");
-      authConfirmWrap.style.display = "block";
+      authTabs.classList.add("mode-signup");
+      authConfirmWrap.classList.add("show");
       authSubmitBtn.innerHTML = "✨ Daftar Sekarang";
     }
   }
@@ -1970,6 +2156,7 @@
       applyAuthMode();
       showAuthOverlay();
     } else {
+      hideAuthOverlay();
       settingsUsername.textContent = session.username;
     }
 
@@ -1981,6 +2168,9 @@
     ttsRateSlider.value = settings.ttsRate || 1;
     ttsRateLabel.textContent = (settings.ttsRate || 1).toFixed(1) + "x";
     loadVoices();
+    if(!settings.effort) settings.effort = "medium";
+    renderEffortMenu();
+    updateEffortBtnLabel();
 
     // Jika sudah login (misal buka di perangkat baru dengan sesi tersimpan),
     // ambil otomatis data terbaru dari server sekali di awal.
