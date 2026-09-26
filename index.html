@@ -143,52 +143,49 @@
   }
   .model-option:hover{background:var(--bg-3); padding-left:18px;}
   .model-option.selected{color:var(--accent); font-weight:600;}
-  .model-option-name{font-weight:600;}
-  .model-option-desc{font-size:11.5px; color:var(--text-2); margin-top:1px;}
-  .model-option-check{color:var(--accent); font-size:13px; margin-left:8px; flex-shrink:0;}
+  .model-option{flex-direction:column; align-items:flex-start; gap:2px;}
+  .model-option-top{display:flex; align-items:center; justify-content:space-between; width:100%; gap:8px;}
+  .model-option-name{font-weight:600; font-size:13.5px;}
+  .model-option.selected .model-option-name{color:var(--accent);}
+  .model-option-desc{font-size:11.5px; color:var(--text-2); font-weight:400; line-height:1.3;}
+  .model-option-check{color:var(--accent); font-size:13px; flex-shrink:0;}
 
-  .effort-btn{
-    display:flex; align-items:center; gap:5px; height:34px; padding:0 12px; border-radius:17px;
-    border:1px solid var(--border); background:var(--bg-2); color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer;
-    transition:background .18s var(--ease), border-color .18s var(--ease), box-shadow .18s var(--ease);
+  /* Menu "Upaya" (effort level) */
+  .effort-menu{
+    position:absolute; bottom:calc(100% + 8px); left:0; min-width:190px; background:var(--bg);
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-lg); z-index:60;
+    opacity:0; transform:translateY(8px) scale(.97); pointer-events:none;
+    transition:opacity .18s var(--ease), transform .18s var(--ease); overflow:hidden;
   }
-  .effort-btn:hover{background:var(--bg-3); border-color:var(--accent);}
-  .effort-btn.open{border-color:var(--accent); box-shadow:var(--accent-glow);}
-  .effort-dropdown{
-    position:absolute; bottom:calc(100% + 8px); left:0; min-width:200px; background:var(--bg);
-    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-lg); z-index:50;
-    overflow:hidden; opacity:0; transform:translateY(8px) scale(.97); pointer-events:none;
-    transition:opacity .18s var(--ease), transform .18s var(--ease); transform-origin:bottom left;
-  }
-  .effort-dropdown.open{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+  .effort-menu.open{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
   .effort-option{
-    padding:10px 14px; cursor:pointer; font-size:13.5px; display:flex; justify-content:space-between; align-items:center;
-    transition:background .15s var(--ease), padding-left .15s var(--ease);
+    padding:9px 14px; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center;
+    transition:background .15s var(--ease);
   }
-  .effort-option:hover{background:var(--bg-3); padding-left:18px;}
+  .effort-option:hover{background:var(--bg-3);}
   .effort-option.selected{color:var(--accent); font-weight:600;}
+  .effort-option-badge{font-size:10.5px; color:var(--text-2); font-weight:400;}
 
+  /* Blok "Berpikir" (thinking / reasoning) */
   .thinking-block{
-    margin-bottom:10px; border:1px solid var(--border); border-radius:12px; background:var(--bg-2);
-    overflow:hidden; animation:fadeIn .3s var(--ease);
+    margin-bottom:8px; border:1px solid var(--border); border-radius:12px; overflow:hidden;
+    background:var(--bg-2); font-size:12.5px;
   }
   .thinking-header{
-    display:flex; align-items:center; gap:8px; padding:9px 13px; cursor:pointer; font-size:13px; color:var(--text-2);
-    user-select:none; transition:background .15s var(--ease);
+    display:flex; align-items:center; gap:8px; padding:8px 12px; cursor:pointer; user-select:none;
+    color:var(--text-2); transition:background .15s var(--ease);
   }
   .thinking-header:hover{background:var(--bg-3);}
-  .thinking-header .think-icon{animation:pulseThink 1.4s ease-in-out infinite;}
-  .thinking-block.done .thinking-header .think-icon{animation:none;}
-  .thinking-header .think-chevron{margin-left:auto; transition:transform .2s var(--ease); font-size:11px;}
-  .thinking-block.expanded .think-chevron{transform:rotate(180deg);}
+  .thinking-header .thinking-icon{animation:none;}
+  .thinking-block.active .thinking-header .thinking-icon{animation:spin 1.6s linear infinite;}
+  .thinking-header .thinking-label{flex:1; font-weight:500;}
+  .thinking-header .thinking-chevron{transition:transform .2s var(--ease); font-size:11px;}
+  .thinking-block.collapsed .thinking-header .thinking-chevron{transform:rotate(-90deg);}
   .thinking-body{
-    max-height:0; overflow:hidden; transition:max-height .3s var(--ease);
-    padding:0 13px; font-size:12.5px; color:var(--text-2); line-height:1.55; border-top:1px solid transparent;
-    white-space:pre-wrap;
+    padding:0 12px 10px 34px; color:var(--text-2); white-space:pre-wrap; line-height:1.5;
+    max-height:220px; overflow-y:auto;
   }
-  .thinking-block.expanded .thinking-body{max-height:400px; overflow-y:auto; padding:4px 13px 12px; border-top-color:var(--border);}
-  @keyframes pulseThink{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
-
+  .thinking-block.collapsed .thinking-body{display:none;}
   .api-status{margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-2);}
   .status-dot{width:7px; height:7px; border-radius:50%; background:#ccc; transition:background .3s var(--ease);}
   .status-dot.ok{background:#22c55e; animation:glowPulse 2.2s ease-out infinite;}
@@ -444,70 +441,65 @@
   .auth-screen{
     position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
     padding:24px; background:radial-gradient(circle at 50% -10%, #123a30, #06110e 70%);
-    overflow-y:auto; opacity:0; pointer-events:none; transition:opacity .35s var(--ease);
+    overflow-y:auto;
+    opacity:0; visibility:hidden; transition:opacity .32s var(--ease), visibility 0s linear .32s;
   }
-  .auth-screen.show{opacity:1; pointer-events:auto;}
+  .auth-screen.show{
+    opacity:1; visibility:visible; transition:opacity .32s var(--ease), visibility 0s linear 0s;
+  }
   .auth-card{
     width:100%; max-width:420px; background:linear-gradient(180deg, #10281f, #0b1e17);
     border:1px solid rgba(255,255,255,0.06); border-radius:28px; padding:34px 28px 28px;
     box-shadow:0 20px 60px rgba(0,0,0,0.45); position:relative;
-    transform:scale(.92) translateY(14px); opacity:0;
-    transition:transform .4s var(--ease-spring), opacity .3s var(--ease);
+    transform:translateY(18px) scale(.96); opacity:0;
+    transition:transform .38s var(--ease-spring), opacity .3s var(--ease);
   }
-  .auth-screen.show .auth-card{transform:scale(1) translateY(0); opacity:1;}
+  .auth-screen.show .auth-card{
+    transform:translateY(0) scale(1); opacity:1;
+  }
   .auth-logo-bubble{
     width:56px; height:56px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg,#1f9d76,#0891b2); box-shadow:0 8px 24px rgba(16,163,127,0.4); font-size:24px; color:#fff;
-    animation:floatLogo 4s ease-in-out infinite;
   }
   .auth-brand{text-align:center; font-size:28px; font-weight:800; color:#6ee7b7; letter-spacing:-.02em; margin-bottom:4px;}
   .auth-subtitle{text-align:center; font-size:12.5px; letter-spacing:.12em; color:#9fb8ac; font-weight:700; margin-bottom:26px; text-transform:uppercase;}
   .auth-tabs{
-    position:relative; display:flex; background:rgba(255,255,255,0.04); border-radius:14px; padding:4px; margin-bottom:22px; gap:4px;
+    display:flex; background:rgba(255,255,255,0.04); border-radius:14px; padding:4px; margin-bottom:22px; gap:4px;
   }
-  .auth-tabs::before{
-    content:""; position:absolute; top:4px; left:4px; width:calc(50% - 4px); height:calc(100% - 8px);
-    background:linear-gradient(135deg,#1f9d76,#17a589); border-radius:11px; box-shadow:0 4px 14px rgba(16,163,127,0.35);
-    transition:transform .32s var(--ease-spring); z-index:0;
-  }
-  .auth-tabs.mode-signup::before{transform:translateX(100%);}
   .auth-tab{
-    position:relative; z-index:1; flex:1; padding:11px 10px; border-radius:11px; border:none; background:transparent; color:#9fb8ac;
+    flex:1; padding:11px 10px; border-radius:11px; border:none; background:transparent; color:#9fb8ac;
     font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
-    transition:color .25s var(--ease);
+    transition:background .2s var(--ease), color .2s var(--ease);
   }
-  .auth-tab.active{color:#fff;}
-  .auth-field{position:relative; margin-bottom:14px; animation:fadeInUp .35s var(--ease) backwards;}
+  .auth-tab.active{background:linear-gradient(135deg,#1f9d76,#17a589); color:#fff; box-shadow:0 4px 14px rgba(16,163,127,0.35);}
+  .auth-tab:active{transform:scale(.96);}
+  .auth-form-fields{
+    transition:opacity .22s var(--ease), transform .22s var(--ease);
+  }
+  .auth-form-fields.switching{opacity:0; transform:translateY(4px);}
+  .auth-field{position:relative; margin-bottom:14px;}
+  .auth-field-confirm{
+    overflow:hidden; max-height:0; opacity:0; margin-bottom:0;
+    transition:max-height .32s var(--ease), opacity .28s var(--ease), margin-bottom .32s var(--ease);
+  }
+  .auth-field-confirm.expanded{max-height:80px; opacity:1; margin-bottom:14px;}
   .auth-field-icon{
     position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#6b8c7e; font-size:15px; pointer-events:none;
-    transition:color .2s var(--ease);
   }
   .auth-field input{
     width:100%; padding:14px 16px 14px 44px; border-radius:14px; border:1px solid rgba(255,255,255,0.08);
     background:rgba(255,255,255,0.03); color:#eafff4; font-size:14.5px; outline:none;
-    transition:border-color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+    transition:border-color .2s var(--ease), background .2s var(--ease);
   }
   .auth-field input::placeholder{color:#5f7d70;}
-  .auth-field input:focus{border-color:#1f9d76; background:rgba(255,255,255,0.05); box-shadow:0 0 0 4px rgba(16,163,127,0.12);}
-  .auth-field input:focus ~ .auth-field-icon{color:#1f9d76;}
+  .auth-field input:focus{border-color:#1f9d76; background:rgba(255,255,255,0.05);}
   .auth-field-eye{
     position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; color:#6b8c7e; font-size:15px;
-    background:none; border:none; padding:4px; transition:color .2s var(--ease), transform .15s var(--ease-spring);
+    background:none; border:none; padding:4px;
   }
-  .auth-field-eye:hover{color:#eafff4; transform:translateY(-50%) scale(1.12);}
-  .auth-confirm-wrap{
-    max-height:0; opacity:0; overflow:hidden; margin-bottom:0;
-    transition:max-height .35s var(--ease), opacity .25s var(--ease), margin-bottom .35s var(--ease);
-  }
-  .auth-confirm-wrap.show{max-height:70px; opacity:1; margin-bottom:14px;}
   .auth-error{
     display:none; color:#ff9494; font-size:13px; margin-bottom:14px; padding:10px 14px;
     background:rgba(229,72,77,0.1); border:1px solid rgba(229,72,77,0.25); border-radius:12px;
-  }
-  .auth-error.show{display:block; animation:authShake .4s var(--ease);}
-  @keyframes authShake{
-    0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(5px);}
-    60%{transform:translateX(-3px);} 80%{transform:translateX(2px);}
   }
   .auth-submit{
     width:100%; padding:15px; border-radius:16px; border:none; cursor:pointer; margin-top:4px;
@@ -527,24 +519,24 @@
     <div class="auth-brand">Jeffrey AI</div>
     <div class="auth-subtitle">Ngobrol Cerdas, Tanpa Basa-basi</div>
 
-    <div class="auth-tabs" id="authTabs">
+    <div class="auth-tabs">
       <button type="button" class="auth-tab" id="authTabLogin">🔒 Masuk</button>
       <button type="button" class="auth-tab" id="authTabSignup">✨ Daftar</button>
     </div>
 
     <div id="authError" class="auth-error"></div>
 
-    <div class="auth-field">
-      <span class="auth-field-icon">👤</span>
-      <input type="text" id="authUsername" autocomplete="username" placeholder="Username">
-    </div>
-    <div class="auth-field">
-      <span class="auth-field-icon">🔒</span>
-      <input type="password" id="authPassword" autocomplete="current-password" placeholder="Password">
-      <button type="button" class="auth-field-eye" data-toggle-for="authPassword">👁️</button>
-    </div>
-    <div class="auth-confirm-wrap" id="authConfirmWrap">
+    <div class="auth-form-fields" id="authFormFields">
       <div class="auth-field">
+        <span class="auth-field-icon">👤</span>
+        <input type="text" id="authUsername" autocomplete="username" placeholder="Username">
+      </div>
+      <div class="auth-field">
+        <span class="auth-field-icon">🔒</span>
+        <input type="password" id="authPassword" autocomplete="current-password" placeholder="Password">
+        <button type="button" class="auth-field-eye" data-toggle-for="authPassword">👁️</button>
+      </div>
+      <div class="auth-field auth-field-confirm" id="authConfirmWrap">
         <span class="auth-field-icon">🔒</span>
         <input type="password" id="authConfirmPassword" autocomplete="new-password" placeholder="Ulangi Password">
         <button type="button" class="auth-field-eye" data-toggle-for="authConfirmPassword">👁️</button>
@@ -621,10 +613,10 @@
             <div class="model-dropdown" id="modelDropdown"></div>
           </div>
           <div class="model-select-wrap">
-            <button class="effort-btn" id="effortBtn" title="Level upaya">
-              <span id="effortBtnIcon">⚡</span><span id="effortBtnLabel">Sedang</span>
+            <button class="model-btn" id="effortBtn" title="Level upaya berpikir">
+              <span>🎚️</span>
             </button>
-            <div class="effort-dropdown" id="effortDropdown"></div>
+            <div class="effort-menu" id="effortMenu"></div>
           </div>
           <button class="model-btn attach-icon-btn" id="attachBtn" title="Lampirkan file">
             <span>📎</span>
@@ -761,7 +753,7 @@
   // GANTI dengan URL Web App Google Apps Script kamu
   // (Deploy > New deployment > Web app > Anyone)
   // ============================================
-  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxtqpZAqDNW4sfs1jtjro4g4E5bRVV03_tVD9CHoUFr6719rXRIS_LrgGKt0ZE7DFFK/exec";
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbymspwXb_Z_85at6vupfLY4GQ362RDu9S8zwz5lDuFajoqOwVcKw9ltskCr2wGRpmrz/exec";
 
   // ---------- State ----------
   let AI_MODELS = [];        // diambil dari Apps Script saat init
@@ -772,13 +764,28 @@
   let isGenerating = false;
   let abortController = null;
   let editingMessageIndex = null;
+
+  // Deskripsi singkat tiap model (ditampilkan di dropdown pemilihan model).
+  const MODEL_DESCRIPTIONS = {
+    "gemini-3.5-flash-lite": "Paling cepat, cocok untuk obrolan ringan sehari-hari",
+    "gemini-3.5-flash":      "Seimbang antara kecepatan dan kedalaman jawaban",
+    "gemini-3.8-flash":      "Bisa berpikir lebih dalam sebelum menjawab"
+  };
+
+  // Level "Upaya" -> makin tinggi, makin dalam AI berpikir sebelum menjawab (tapi makin lama & makin banyak token).
+  const EFFORT_LEVELS = [
+    { id:"low",    label:"Rendah",  desc:"Cepat, minim berpikir" },
+    { id:"medium", label:"Sedang",  desc:"Bawaan", isDefault:true },
+    { id:"high",   label:"Tinggi",  desc:"Lebih teliti" },
+    { id:"extra",  label:"Ekstra",  desc:"Lebih dalam, lebih lama" },
+    { id:"max",    label:"Maks",    desc:"Penggunaan token lebih besar" }
+  ];
   let attachedFile = null;   // {name, content} - file teks yang sedang dilampirkan ke pesan berikutnya
   let attachedImage = null;  // {name, mimeType, dataBase64, previewUrl} - gambar yang sedang dilampirkan
   let recognition = null;    // Web Speech API instance untuk voice input
   let isListening = false;
 
   const STORAGE_KEY = "jeffrey_ai_chats";
-  const CHATS_OWNER_KEY = "jeffrey_ai_chats_owner"; // catat username pemilik data localStorage saat ini
   const SETTINGS_KEY = "jeffrey_ai_settings";
 
   // ---------- DOM ----------
@@ -795,22 +802,7 @@
   const modelBtnLabel = document.getElementById("modelBtnLabel");
   const modelDropdown = document.getElementById("modelDropdown");
   const effortBtn = document.getElementById("effortBtn");
-  const effortBtnIcon = document.getElementById("effortBtnIcon");
-  const effortBtnLabel = document.getElementById("effortBtnLabel");
-  const effortDropdown = document.getElementById("effortDropdown");
-
-  const EFFORT_LEVELS = [
-    { id:"low",    name:"Rendah",  icon:"🌱", desc:"Cepat, jawaban singkat" },
-    { id:"medium", name:"Sedang",  icon:"⚡", desc:"Seimbang (default)" },
-    { id:"high",   name:"Tinggi",  icon:"🔥", desc:"Lebih dalam & teliti" },
-    { id:"extra",  name:"Ekstra",  icon:"💎", desc:"Analisis lebih mendalam" },
-    { id:"max",    name:"Maks",    icon:"🚀", desc:"Paling dalam, lebih lambat" }
-  ];
-  const MODEL_DESCRIPTIONS = {
-    "gemini-3.5-flash-lite": "Paling cepat & ringan",
-    "gemini-3.5-flash": "Seimbang untuk sehari-hari",
-    "gemini-3.8-flash": "Penalaran lebih dalam"
-  };
+  const effortMenu = document.getElementById("effortMenu");
   const statusDot = document.getElementById("statusDot");
   const statusText = document.getElementById("statusText");
   const chatArea = document.getElementById("chatArea");
@@ -848,10 +840,10 @@
   const authUsername = document.getElementById("authUsername");
   const authPassword = document.getElementById("authPassword");
   const authConfirmWrap = document.getElementById("authConfirmWrap");
+  const authFormFields = document.getElementById("authFormFields");
   const authConfirmPassword = document.getElementById("authConfirmPassword");
   const authSubmitBtn = document.getElementById("authSubmitBtn");
   const authTabLogin = document.getElementById("authTabLogin");
-  const authTabs = document.getElementById("authTabs");
   const authTabSignup = document.getElementById("authTabSignup");
   const settingsUsername = document.getElementById("settingsUsername");
   const logoutBtn = document.getElementById("logoutBtn");
@@ -915,22 +907,10 @@
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
   function saveChats(){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-      // Catat pemilik data ini, supaya akun lain yang login di browser yang sama tidak ikut membaca riwayat ini.
-      localStorage.setItem(CHATS_OWNER_KEY, session ? session.username : "");
-    }catch(e){ console.error("Gagal menyimpan riwayat:", e); }
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(chats)); }catch(e){ console.error("Gagal menyimpan riwayat:", e); }
   }
   function loadChats(){
     try{
-      const owner = localStorage.getItem(CHATS_OWNER_KEY) || "";
-      const currentUser = session ? session.username : "";
-      if(owner !== currentUser){
-        // Data localStorage ini milik akun lain (atau belum ada pemiliknya) -> jangan dipakai,
-        // kosongkan dulu sambil menunggu data yang benar diambil dari server (pullDataFromServer).
-        chats = [];
-        return;
-      }
       const raw = localStorage.getItem(STORAGE_KEY);
       chats = raw ? JSON.parse(raw) : [];
     }catch(e){ chats = []; }
@@ -1003,11 +983,11 @@
       opt.className = "model-option" + (isSelected ? " selected" : "");
       const desc = MODEL_DESCRIPTIONS[m.id] || "";
       opt.innerHTML = `
-        <div>
-          <div class="model-option-name">${escapeHtml(m.name)}</div>
-          ${desc ? `<div class="model-option-desc">${escapeHtml(desc)}</div>` : ""}
+        <div class="model-option-top">
+          <span class="model-option-name">${escapeHtml(m.name)}</span>
+          ${isSelected ? '<span class="model-option-check">✓</span>' : ""}
         </div>
-        ${isSelected ? '<span class="model-option-check">✓</span>' : ""}`;
+        ${desc ? `<div class="model-option-desc">${escapeHtml(desc)}</div>` : ""}`;
       opt.addEventListener("click", ()=>{
         selectedModel = m;
         modelBtn.title = m.name;
@@ -1027,34 +1007,24 @@
   }
 
   function renderEffortMenu(){
-    effortDropdown.innerHTML = "";
+    if(!effortMenu) return;
+    effortMenu.innerHTML = "";
     EFFORT_LEVELS.forEach(lvl=>{
-      const isSelected = settings.effort === lvl.id;
+      const isSelected = (settings.effort || "medium") === lvl.id;
       const opt = document.createElement("div");
       opt.className = "effort-option" + (isSelected ? " selected" : "");
       opt.innerHTML = `
-        <div>
-          <div class="model-option-name">${lvl.icon} ${escapeHtml(lvl.name)}</div>
-          <div class="model-option-desc">${escapeHtml(lvl.desc)}</div>
-        </div>
-        ${isSelected ? '<span class="model-option-check">✓</span>' : ""}`;
+        <span>${escapeHtml(lvl.label)}</span>
+        <span class="effort-option-badge">${isSelected ? "✓" : (lvl.desc ? escapeHtml(lvl.desc) : "")}</span>`;
       opt.addEventListener("click", ()=>{
         settings.effort = lvl.id;
         saveSettings();
-        effortDropdown.classList.remove("open");
+        effortMenu.classList.remove("open");
         effortBtn.classList.remove("open");
         renderEffortMenu();
-        updateEffortBtnLabel();
       });
-      effortDropdown.appendChild(opt);
+      effortMenu.appendChild(opt);
     });
-  }
-
-  function updateEffortBtnLabel(){
-    const lvl = EFFORT_LEVELS.find(l=>l.id===settings.effort) || EFFORT_LEVELS[1];
-    effortBtnIcon.textContent = lvl.icon;
-    effortBtnLabel.textContent = lvl.name;
-    effortBtn.title = "Level upaya: " + lvl.name + " — " + lvl.desc;
   }
 
   function updateApiStatus(){
@@ -1205,16 +1175,17 @@
       content.innerHTML = renderMarkdown(msg.content || "");
     }
 
-    body.appendChild(roleLabel);
     if(msg.role === "assistant" && msg.thinking){
-      const thinkWrap = document.createElement("div");
-      thinkWrap.innerHTML = renderThinkingBlockHtml(msg.thinking, false);
-      const tb = thinkWrap.firstElementChild;
-      tb.classList.add("done");
-      body.appendChild(tb);
+      const thinkingWrap = document.createElement("div");
+      thinkingWrap.innerHTML = buildThinkingBlockHtml(msg.thinking);
+      body.appendChild(roleLabel);
+      body.appendChild(thinkingWrap.firstElementChild);
       attachThinkingToggle(body);
+      body.appendChild(content);
+    } else {
+      body.appendChild(roleLabel);
+      body.appendChild(content);
     }
-    body.appendChild(content);
 
     const actions = document.createElement("div");
     actions.className = "msg-actions";
@@ -1378,25 +1349,21 @@
         if(typingLabel) typingLabel.textContent = `Jeffrey AI (mencoba lagi ${attempt}/2...)`;
       });
       const reply = result.reply;
-      const thinking = result.thinking || "";
+      const thinking = result.thinking;
 
-      // Ganti indikator typing dengan bubble kosong (+ blok berpikir jika ada), lalu ketik bertahap (efek streaming)
+      // Bangun ulang bubble: blok "Berpikir" (jika ada) + konten jawaban kosong untuk efek ketik.
       typingWrap.innerHTML = `
         <div class="msg-avatar">J</div>
         <div class="msg-body">
           <div class="msg-role">Jeffrey AI</div>
-          ${thinking ? renderThinkingBlockHtml(thinking, true) : ""}
+          ${thinking ? buildThinkingBlockHtml(thinking) : ""}
           <div class="msg-content" id="streamingContent"></div>
         </div>`;
-      if(thinking) attachThinkingToggle(typingWrap);
+      attachThinkingToggle(typingWrap);
       const streamEl = typingWrap.querySelector("#streamingContent");
       await typeOutText(streamEl, reply, abortController.signal);
-      if(thinking){
-        const tb = typingWrap.querySelector(".thinking-block");
-        if(tb) tb.classList.add("done");
-      }
 
-      chat.messages.push({ role:"assistant", content: reply, thinking: thinking });
+      chat.messages.push({ role:"assistant", content: reply, thinking: thinking || null });
       saveChats();
       renderChat();
       if(settings.ttsEnabled) speakText(reply);
@@ -1406,6 +1373,14 @@
       errWrap.className = "error-box";
       if(err.name === "AbortError"){
         errWrap.textContent = "Permintaan dihentikan.";
+      } else if(err.quotaExceeded){
+        const q = err.quota;
+        let extra = "";
+        if(q && q.resetAt){
+          const resetTime = new Date(q.resetAt).toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit" });
+          extra = ` Kuota akan reset sekitar pukul ${resetTime}.`;
+        }
+        errWrap.textContent = "⏳ " + friendlyError(err) + extra;
       } else {
         errWrap.textContent = "Terjadi kesalahan saat menghubungi AI: " + friendlyError(err);
       }
@@ -1414,6 +1389,31 @@
     } finally {
       setGenerating(false);
       abortController = null;
+    }
+  }
+
+  // Bangun HTML untuk blok "Berpikir" (collapsible) berisi ringkasan reasoning dari Gemini.
+  function buildThinkingBlockHtml(thinkingText){
+    return `
+      <div class="thinking-block collapsed" data-thinking>
+        <div class="thinking-header" data-thinking-toggle>
+          <span class="thinking-icon">🤔</span>
+          <span class="thinking-label">Proses berpikir</span>
+          <span class="thinking-chevron">▾</span>
+        </div>
+        <div class="thinking-body">${escapeHtml(thinkingText)}</div>
+      </div>`;
+  }
+
+  // Pasang event listener untuk expand/collapse blok "Berpikir" di dalam sebuah wrapper pesan.
+  function attachThinkingToggle(wrapEl){
+    const block = wrapEl.querySelector("[data-thinking]");
+    if(!block) return;
+    const header = block.querySelector("[data-thinking-toggle]");
+    if(header){
+      header.addEventListener("click", ()=>{
+        block.classList.toggle("collapsed");
+      });
     }
   }
 
@@ -1440,26 +1440,6 @@
       }
       tick();
     });
-  }
-
-  function renderThinkingBlockHtml(thinkingText, startExpanded){
-    return `
-      <div class="thinking-block${startExpanded ? " expanded" : ""}">
-        <div class="thinking-header">
-          <span class="think-icon">🤔</span><span>Berpikir...</span><span class="think-chevron">▾</span>
-        </div>
-        <div class="thinking-body">${escapeHtml(thinkingText)}</div>
-      </div>`;
-  }
-
-  function attachThinkingToggle(container){
-    const header = container.querySelector(".thinking-header");
-    const block = container.querySelector(".thinking-block");
-    if(header && block){
-      header.addEventListener("click", ()=>{
-        block.classList.toggle("expanded");
-      });
-    }
   }
 
   function friendlyError(err){
@@ -1513,10 +1493,13 @@
             clearSession();
             showAuthOverlay();
           }
-          throw new Error(data.error);
+          const quotaErr = new Error(data.error);
+          quotaErr.quotaExceeded = !!data.quotaExceeded;
+          quotaErr.quota = data.quota || null;
+          throw quotaErr;
         }
         if(typeof data.reply === "string"){
-          return { reply: data.reply, thinking: (typeof data.thinking === "string" ? data.thinking : ""), quota: data.quota || null };
+          return { reply: data.reply, thinking: data.thinking || null, quota: data.quota || null };
         }
         throw new Error("Format respons dari Apps Script tidak dikenali.");
       }catch(err){
@@ -1867,23 +1850,24 @@
   // ---------- Model dropdown ----------
   modelBtn.addEventListener("click", (e)=>{
     e.stopPropagation();
+    effortMenu.classList.remove("open");
+    effortBtn.classList.remove("open");
     modelDropdown.classList.toggle("open");
     modelBtn.classList.toggle("open", modelDropdown.classList.contains("open"));
+  });
+  effortBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    modelDropdown.classList.remove("open");
+    modelBtn.classList.remove("open");
+    effortMenu.classList.toggle("open");
+    effortBtn.classList.toggle("open", effortMenu.classList.contains("open"));
   });
   document.addEventListener("click", ()=>{
     modelDropdown.classList.remove("open");
     modelBtn.classList.remove("open");
-    effortDropdown.classList.remove("open");
+    effortMenu.classList.remove("open");
     effortBtn.classList.remove("open");
   });
-
-  // ---------- Effort dropdown ----------
-  effortBtn.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    effortDropdown.classList.toggle("open");
-    effortBtn.classList.toggle("open", effortDropdown.classList.contains("open"));
-  });
-  effortDropdown.addEventListener("click", (e)=> e.stopPropagation());
 
   // ---------- Settings modal ----------
   settingsBtn.addEventListener("click", ()=>{
@@ -1910,17 +1894,23 @@
 
   // ---------- Auth ----------
   function showAuthOverlay(){
-    authOverlay.classList.add("show");
+    authOverlay.style.display = "flex";
+    // Beri browser waktu 1 frame untuk apply display dulu sebelum transisi opacity/transform jalan.
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=> authOverlay.classList.add("show"));
+    });
   }
   function hideAuthOverlay(){
     authOverlay.classList.remove("show");
+    // Tunggu transisi fade-out selesai baru benar-benar sembunyikan dari layout.
+    setTimeout(()=>{
+      if(!authOverlay.classList.contains("show")) authOverlay.style.display = "none";
+    }, 340);
   }
   function setAuthError(msg){
-    if(!msg){ authError.classList.remove("show"); authError.textContent = ""; return; }
+    if(!msg){ authError.style.display = "none"; authError.textContent = ""; return; }
+    authError.style.display = "block";
     authError.textContent = msg;
-    authError.classList.remove("show");
-    void authError.offsetWidth; // restart animasi shake tiap kali error baru muncul
-    authError.classList.add("show");
   }
   function applyAuthMode(){
     setAuthError("");
@@ -1930,19 +1920,27 @@
     if(authMode === "login"){
       authTabLogin.classList.add("active");
       authTabSignup.classList.remove("active");
-      authTabs.classList.remove("mode-signup");
-      authConfirmWrap.classList.remove("show");
+      authConfirmWrap.classList.remove("expanded");
       authSubmitBtn.innerHTML = "🔒 Masuk";
     } else {
       authTabSignup.classList.add("active");
       authTabLogin.classList.remove("active");
-      authTabs.classList.add("mode-signup");
-      authConfirmWrap.classList.add("show");
+      authConfirmWrap.classList.add("expanded");
       authSubmitBtn.innerHTML = "✨ Daftar Sekarang";
     }
   }
-  authTabLogin.addEventListener("click", ()=>{ authMode = "login"; applyAuthMode(); });
-  authTabSignup.addEventListener("click", ()=>{ authMode = "signup"; applyAuthMode(); });
+  authTabLogin.addEventListener("click", ()=>{
+    if(authMode === "login") return;
+    authMode = "login";
+    authFormFields.classList.add("switching");
+    setTimeout(()=>{ applyAuthMode(); authFormFields.classList.remove("switching"); }, 140);
+  });
+  authTabSignup.addEventListener("click", ()=>{
+    if(authMode === "signup") return;
+    authMode = "signup";
+    authFormFields.classList.add("switching");
+    setTimeout(()=>{ applyAuthMode(); authFormFields.classList.remove("switching"); }, 140);
+  });
 
   document.querySelectorAll(".auth-field-eye").forEach(btn=>{
     btn.addEventListener("click", ()=>{
@@ -2025,13 +2023,15 @@
     }
   }
 
-  async function pullDataFromServer(){
+  async function pullDataFromServer(silent){
     if(!session) return false;
     try{
       const data = await callBackend({ action: "loadData", token: session.token });
       if(data.error){
+        // Hanya paksa logout kalau server benar-benar bilang sesi tidak valid.
+        // Kegagalan lain (jaringan lambat, error sesaat, dll) TIDAK boleh memaksa logout otomatis.
         if(data.needLogin){ clearSession(); showAuthOverlay(); }
-        syncStatusText.textContent = "Gagal ambil data: " + data.error;
+        if(!silent) syncStatusText.textContent = "Gagal ambil data: " + data.error;
         return false;
       }
       if(data.data){
@@ -2049,13 +2049,15 @@
         renderHistory();
         renderChat();
         renderQuickPromptButtons();
-        syncStatusText.textContent = "Data dimuat dari akun ✓";
+        if(!silent) syncStatusText.textContent = "Data dimuat dari akun ✓";
       } else {
-        syncStatusText.textContent = "Belum ada data tersimpan di akun ini";
+        if(!silent) syncStatusText.textContent = "Belum ada data tersimpan di akun ini";
       }
       return true;
     }catch(err){
-      syncStatusText.textContent = "Gagal ambil data: " + (err.message || "tidak diketahui");
+      // Error jaringan/exception lain saat auto-load TIDAK memaksa logout,
+      // supaya sesi tetap bertahan walau ada gangguan sesaat.
+      if(!silent) syncStatusText.textContent = "Gagal ambil data: " + (err.message || "tidak diketahui");
       return false;
     }
   }
@@ -2076,10 +2078,6 @@
       try{ await callBackend({ action: "logout", token: session.token }); }catch(e){}
     }
     clearSession();
-    chats = [];
-    currentChatId = null;
-    renderHistory();
-    renderChat();
     settingsModal.classList.remove("show");
     authMode = "login";
     applyAuthMode();
@@ -2173,7 +2171,6 @@
       applyAuthMode();
       showAuthOverlay();
     } else {
-      hideAuthOverlay();
       settingsUsername.textContent = session.username;
     }
 
@@ -2185,14 +2182,11 @@
     ttsRateSlider.value = settings.ttsRate || 1;
     ttsRateLabel.textContent = (settings.ttsRate || 1).toFixed(1) + "x";
     loadVoices();
-    if(!settings.effort) settings.effort = "medium";
-    renderEffortMenu();
-    updateEffortBtnLabel();
 
     // Jika sudah login (misal buka di perangkat baru dengan sesi tersimpan),
-    // ambil otomatis data terbaru dari server sekali di awal.
+    // ambil otomatis data terbaru dari server sekali di awal (silent: tidak tampilkan status/logout paksa jika gagal).
     if(session && session.token){
-      pullDataFromServer();
+      pullDataFromServer(true);
     }
 
     modelBtn.title = "Memuat model...";
@@ -2209,6 +2203,7 @@
     }
 
     renderModelDropdown();
+    renderEffortMenu();
     updateApiStatus();
     renderHistory();
     renderChat();
