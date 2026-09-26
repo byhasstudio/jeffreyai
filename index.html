@@ -394,29 +394,92 @@
 </head>
 <body>
 
-<div class="modal-overlay" id="authOverlay" style="display:flex;">
-  <div class="modal" style="max-width:380px; width:92%;">
-    <div class="modal-header">
-      <h2 id="authTitle">Masuk ke Jeffrey AI</h2>
+<style>
+  .auth-screen{
+    position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
+    padding:24px; background:radial-gradient(circle at 50% -10%, #123a30, #06110e 70%);
+    overflow-y:auto;
+  }
+  .auth-card{
+    width:100%; max-width:420px; background:linear-gradient(180deg, #10281f, #0b1e17);
+    border:1px solid rgba(255,255,255,0.06); border-radius:28px; padding:34px 28px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45); position:relative; animation:scaleIn .35s var(--ease);
+  }
+  .auth-logo-bubble{
+    width:56px; height:56px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg,#1f9d76,#0891b2); box-shadow:0 8px 24px rgba(16,163,127,0.4); font-size:24px; color:#fff;
+  }
+  .auth-brand{text-align:center; font-size:28px; font-weight:800; color:#6ee7b7; letter-spacing:-.02em; margin-bottom:4px;}
+  .auth-subtitle{text-align:center; font-size:12.5px; letter-spacing:.12em; color:#9fb8ac; font-weight:700; margin-bottom:26px; text-transform:uppercase;}
+  .auth-tabs{
+    display:flex; background:rgba(255,255,255,0.04); border-radius:14px; padding:4px; margin-bottom:22px; gap:4px;
+  }
+  .auth-tab{
+    flex:1; padding:11px 10px; border-radius:11px; border:none; background:transparent; color:#9fb8ac;
+    font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+    transition:background .2s var(--ease), color .2s var(--ease);
+  }
+  .auth-tab.active{background:linear-gradient(135deg,#1f9d76,#17a589); color:#fff; box-shadow:0 4px 14px rgba(16,163,127,0.35);}
+  .auth-field{position:relative; margin-bottom:14px;}
+  .auth-field-icon{
+    position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#6b8c7e; font-size:15px; pointer-events:none;
+  }
+  .auth-field input{
+    width:100%; padding:14px 16px 14px 44px; border-radius:14px; border:1px solid rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.03); color:#eafff4; font-size:14.5px; outline:none;
+    transition:border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .auth-field input::placeholder{color:#5f7d70;}
+  .auth-field input:focus{border-color:#1f9d76; background:rgba(255,255,255,0.05);}
+  .auth-field-eye{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; color:#6b8c7e; font-size:15px;
+    background:none; border:none; padding:4px;
+  }
+  .auth-error{
+    display:none; color:#ff9494; font-size:13px; margin-bottom:14px; padding:10px 14px;
+    background:rgba(229,72,77,0.1); border:1px solid rgba(229,72,77,0.25); border-radius:12px;
+  }
+  .auth-submit{
+    width:100%; padding:15px; border-radius:16px; border:none; cursor:pointer; margin-top:4px;
+    background:linear-gradient(135deg,#1f9d76,#17a589); color:#fff; font-size:15px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 10px 28px rgba(16,163,127,0.35);
+    transition:transform .15s var(--ease), box-shadow .2s var(--ease), opacity .2s var(--ease);
+  }
+  .auth-submit:hover{transform:translateY(-1px); box-shadow:0 14px 34px rgba(16,163,127,0.45);}
+  .auth-submit:active{transform:translateY(0) scale(.98);}
+  .auth-submit:disabled{opacity:.6; cursor:default; transform:none;}
+</style>
+
+<div class="auth-screen" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo-bubble">💬</div>
+    <div class="auth-brand">Jeffrey AI</div>
+    <div class="auth-subtitle">Chat Elegan &amp; Simpel</div>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab" id="authTabLogin">🔒 Masuk</button>
+      <button type="button" class="auth-tab" id="authTabSignup">✨ Daftar</button>
     </div>
-    <div class="modal-body">
-      <div id="authError" style="display:none; color:var(--danger); font-size:13px; margin-bottom:10px; padding:8px 10px; background:rgba(229,72,77,0.08); border-radius:9px;"></div>
-      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:10px;">
-        <div>
-          <div class="settings-row-label" style="margin-bottom:6px;">Username</div>
-          <input type="text" id="authUsername" autocomplete="username" placeholder="username" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; outline:none;">
-        </div>
-        <div>
-          <div class="settings-row-label" style="margin-bottom:6px;">Password</div>
-          <input type="password" id="authPassword" autocomplete="current-password" placeholder="password" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; outline:none;">
-        </div>
-        <button class="btn-save-edit" id="authSubmitBtn" style="width:100%; padding:11px; border-radius:10px; margin-top:4px;">Masuk</button>
-        <div style="text-align:center; font-size:13px; color:var(--text-2); margin-top:4px;">
-          <span id="authSwitchText">Belum punya akun?</span>
-          <a href="#" id="authSwitchLink" style="color:var(--accent); font-weight:600; text-decoration:none;">Daftar</a>
-        </div>
-      </div>
+
+    <div id="authError" class="auth-error"></div>
+
+    <div class="auth-field">
+      <span class="auth-field-icon">👤</span>
+      <input type="text" id="authUsername" autocomplete="username" placeholder="Username">
     </div>
+    <div class="auth-field">
+      <span class="auth-field-icon">🔒</span>
+      <input type="password" id="authPassword" autocomplete="current-password" placeholder="Password">
+      <button type="button" class="auth-field-eye" data-toggle-for="authPassword">👁️</button>
+    </div>
+    <div class="auth-field" id="authConfirmWrap" style="display:none;">
+      <span class="auth-field-icon">🔒</span>
+      <input type="password" id="authConfirmPassword" autocomplete="new-password" placeholder="Ulangi Password">
+      <button type="button" class="auth-field-eye" data-toggle-for="authConfirmPassword">👁️</button>
+    </div>
+
+    <button class="auth-submit" id="authSubmitBtn">🔒 Masuk</button>
   </div>
 </div>
 
@@ -662,13 +725,14 @@
 
   // ---------- Auth DOM ----------
   const authOverlay = document.getElementById("authOverlay");
-  const authTitle = document.getElementById("authTitle");
   const authError = document.getElementById("authError");
   const authUsername = document.getElementById("authUsername");
   const authPassword = document.getElementById("authPassword");
+  const authConfirmWrap = document.getElementById("authConfirmWrap");
+  const authConfirmPassword = document.getElementById("authConfirmPassword");
   const authSubmitBtn = document.getElementById("authSubmitBtn");
-  const authSwitchText = document.getElementById("authSwitchText");
-  const authSwitchLink = document.getElementById("authSwitchLink");
+  const authTabLogin = document.getElementById("authTabLogin");
+  const authTabSignup = document.getElementById("authTabSignup");
   const settingsUsername = document.getElementById("settingsUsername");
   const logoutBtn = document.getElementById("logoutBtn");
   const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
@@ -1577,22 +1641,29 @@
   }
   function applyAuthMode(){
     setAuthError("");
+    authUsername.value = "";
+    authPassword.value = "";
+    authConfirmPassword.value = "";
     if(authMode === "login"){
-      authTitle.textContent = "Masuk ke Jeffrey AI";
-      authSubmitBtn.textContent = "Masuk";
-      authSwitchText.textContent = "Belum punya akun?";
-      authSwitchLink.textContent = "Daftar";
+      authTabLogin.classList.add("active");
+      authTabSignup.classList.remove("active");
+      authConfirmWrap.style.display = "none";
+      authSubmitBtn.innerHTML = "🔒 Masuk";
     } else {
-      authTitle.textContent = "Daftar Akun Baru";
-      authSubmitBtn.textContent = "Daftar";
-      authSwitchText.textContent = "Sudah punya akun?";
-      authSwitchLink.textContent = "Masuk";
+      authTabSignup.classList.add("active");
+      authTabLogin.classList.remove("active");
+      authConfirmWrap.style.display = "block";
+      authSubmitBtn.innerHTML = "✨ Daftar Sekarang";
     }
   }
-  authSwitchLink.addEventListener("click", (e)=>{
-    e.preventDefault();
-    authMode = authMode === "login" ? "signup" : "login";
-    applyAuthMode();
+  authTabLogin.addEventListener("click", ()=>{ authMode = "login"; applyAuthMode(); });
+  authTabSignup.addEventListener("click", ()=>{ authMode = "signup"; applyAuthMode(); });
+
+  document.querySelectorAll(".auth-field-eye").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const target = document.getElementById(btn.dataset.toggleFor);
+      target.type = target.type === "password" ? "text" : "password";
+    });
   });
 
   async function callBackend(payload){
@@ -1612,8 +1683,15 @@
       setAuthError("Username dan password wajib diisi.");
       return;
     }
+    if(authMode === "signup"){
+      const confirmPw = authConfirmPassword.value;
+      if(password !== confirmPw){
+        setAuthError("Konfirmasi password tidak cocok.");
+        return;
+      }
+    }
     authSubmitBtn.disabled = true;
-    const originalLabel = authSubmitBtn.textContent;
+    const originalLabel = authSubmitBtn.innerHTML;
     authSubmitBtn.textContent = "Memproses...";
     setAuthError("");
     try{
@@ -1626,17 +1704,19 @@
       saveSession();
       authUsername.value = "";
       authPassword.value = "";
+      authConfirmPassword.value = "";
       hideAuthOverlay();
       settingsUsername.textContent = session.username;
     }catch(err){
       setAuthError("Gagal menghubungi server: " + (err.message || "tidak diketahui"));
     }finally{
       authSubmitBtn.disabled = false;
-      authSubmitBtn.textContent = originalLabel;
+      authSubmitBtn.innerHTML = originalLabel;
     }
   }
   authSubmitBtn.addEventListener("click", handleAuthSubmit);
-  authPassword.addEventListener("keydown", (e)=>{ if(e.key === "Enter") handleAuthSubmit(); });
+  authPassword.addEventListener("keydown", (e)=>{ if(e.key === "Enter" && authMode === "login") handleAuthSubmit(); });
+  authConfirmPassword.addEventListener("keydown", (e)=>{ if(e.key === "Enter") handleAuthSubmit(); });
   authUsername.addEventListener("keydown", (e)=>{ if(e.key === "Enter") authPassword.focus(); });
 
   async function doLogout(){
