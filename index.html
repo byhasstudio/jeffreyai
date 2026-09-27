@@ -1286,7 +1286,7 @@
 
     if(msg.role === "assistant" && msg.thinking){
       const thinkingWrap = document.createElement("div");
-      thinkingWrap.innerHTML = buildThinkingBlockHtml(msg.thinking);
+      thinkingWrap.innerHTML = buildThinkingBlockHtml(msg.thinking, msg.thinkSeconds);
       body.appendChild(roleLabel);
       body.appendChild(thinkingWrap.firstElementChild);
       attachThinkingToggle(body);
@@ -1457,26 +1457,28 @@
     const typingStatusTimer = startTypingStatusCycle(typingWrap.querySelector(".typing-status-text"));
 
     try{
+      const thinkStartedAt = Date.now();
       const result = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
         const typingLabel = typingWrap.querySelector(".msg-role");
         if(typingLabel) typingLabel.textContent = `Jeffrey AI (mencoba lagi ${attempt}/2...)`;
       });
       const reply = result.reply;
       const thinking = result.thinking;
+      const thinkSeconds = ((Date.now() - thinkStartedAt) / 1000).toFixed(1);
 
       // Bangun ulang bubble: blok "Berpikir" (jika ada) + konten jawaban kosong untuk efek ketik.
       typingWrap.innerHTML = `
         <div class="msg-avatar">J</div>
         <div class="msg-body">
           <div class="msg-role">Jeffrey AI</div>
-          ${thinking ? buildThinkingBlockHtml(thinking) : ""}
+          ${thinking ? buildThinkingBlockHtml(thinking, thinkSeconds) : ""}
           <div class="msg-content" id="streamingContent"></div>
         </div>`;
       attachThinkingToggle(typingWrap);
       const streamEl = typingWrap.querySelector("#streamingContent");
       await typeOutText(streamEl, reply, abortController.signal);
 
-      chat.messages.push({ role:"assistant", content: reply, thinking: thinking || null });
+      chat.messages.push({ role:"assistant", content: reply, thinking: thinking || null, thinkSeconds: thinking ? thinkSeconds : null });
       saveChats();
       renderChat();
       if(settings.ttsEnabled) speakText(reply);
@@ -1507,12 +1509,13 @@
   }
 
   // Bangun HTML untuk blok "Berpikir" (collapsible) berisi ringkasan reasoning dari Gemini.
-  function buildThinkingBlockHtml(thinkingText){
+  function buildThinkingBlockHtml(thinkingText, seconds){
+    const label = seconds ? `Berpikir selama ${seconds} detik` : "Proses berpikir";
     return `
       <div class="thinking-block collapsed" data-thinking>
         <div class="thinking-header" data-thinking-toggle>
           <span class="thinking-icon">🤔</span>
-          <span class="thinking-label">Proses berpikir</span>
+          <span class="thinking-label">${escapeHtml(label)}</span>
           <span class="thinking-chevron">▾</span>
         </div>
         <div class="thinking-body">${escapeHtml(thinkingText)}</div>
