@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Jeffrey AI</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --bg:#ffffff; --bg-2:#f7f7f9; --bg-3:#edeef2; --text:#181820; --text-2:#7a7a88;
@@ -308,7 +310,7 @@
   .typing-status-row{display:flex; align-items:center; gap:8px; padding:4px 0;}
   .typing-status-text{
     font-size:13px; color:var(--text-2); opacity:0; transform:translateY(3px);
-    transition:opacity .2s var(--ease), transform .2s var(--ease);
+    transition:opacity .12s var(--ease), transform .12s var(--ease);
   }
   .typing-status-text.show{opacity:1; transform:translateY(0);}
 
@@ -812,6 +814,37 @@
   // ============================================
   const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxnQPM6Qnwo9innK-WuAg6kEJ9XWN_XPW_E2yEc3LjdAfrkfc5OjzWTjdVwIkoNyXOBgw/exec";
 
+  // ============================================
+  // FIREBASE WEB CONFIG (untuk force-update REALTIME, tanpa polling 30 detik)
+  // Ini "public config", BEDA dari service account key di Code.gs -- memang aman
+  // dipasang di client, karena akses tulis tetap dikunci lewat Firestore Security Rules.
+  // CARA AMBIL:
+  // 1. Buka https://console.firebase.google.com -> pilih project jeffreyai-f3e84
+  // 2. Klik ikon gerigi (Project Settings) -> tab "General"
+  // 3. Scroll ke "Your apps". Kalau belum ada Web app, klik ikon "</>" untuk buat satu
+  //    (kasih nama bebas, tidak perlu centang Firebase Hosting)
+  // 4. Salin object "firebaseConfig" yang muncul, isi ke bawah ini
+  // 5. Set Firestore Security Rules (Firestore Database -> Rules) supaya "system/appVersion"
+  //    boleh dibaca publik tapi TIDAK bisa ditulis dari client:
+  //      rules_version = '2';
+  //      service cloud.firestore {
+  //        match /databases/{database}/documents {
+  //          match /system/appVersion { allow read: if true; allow write: if false; }
+  //          match /{document=**}     { allow read, write: if false; }
+  //        }
+  //      }
+  //    (Apps Script tetap bisa menulis karena pakai service account, yang otomatis
+  //    melewati Security Rules -- rules ini cuma membatasi akses dari browser.)
+  // ============================================
+  const FIREBASE_WEB_CONFIG = {
+    apiKey: "AIzaSyDFCVU_hdqD8wCdR5PU_z4sZ-aNS-IN5qw",
+    authDomain: "jeffreyai-f3e84.firebaseapp.com",
+    projectId: "jeffreyai-f3e84",
+    storageBucket: "jeffreyai-f3e84.firebasestorage.app",
+    messagingSenderId: "623337133419",
+    appId: "1:623337133419:web:42d47c5fd02014b819a82e"
+  };
+
   // ---------- State ----------
   let AI_MODELS = [];        // diambil dari Apps Script saat init
   let backendConfigured = false;
@@ -912,6 +945,9 @@
   let localAppVersion = 0;
   let forceUpdatePollTimer = null;
   let forceUpdateTriggered = false;
+  let fbApp = null;
+  let fbDb = null;
+  let fbUnsubscribeVersion = null;
   const logoutBtn = document.getElementById("logoutBtn");
   const syncDataBtn = document.getElementById("syncDataBtn");
   const syncStatusText = document.getElementById("syncStatusText");
@@ -1537,8 +1573,8 @@
       setTimeout(()=>{
         el.textContent = TYPING_STATUS_PHRASES[i];
         el.classList.add("show");
-      }, 200);
-    }, 2200);
+      }, 100);
+    }, 500);
   }
 
   // ---------- API Call (lewat Google Apps Script proxy) ----------
@@ -2326,10 +2362,55 @@
     }
   }
 
-  function startForceUpdatePolling(){
-    checkAppVersion();
+  function initFirebaseIfNeeded_(){
+    if(fbDb) return true;
+    if(typeof firebase === "undefined") return false;
+    if(!FIREBASE_WEB_CONFIG.apiKey || FIREBASE_WEB_CONFIG.apiKey.indexOf("ISI_API_KEY") === 0) return false;
+    try{
+      fbApp = firebase.apps && firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_WEB_CONFIG);
+      fbDb = firebase.firestore();
+      return true;
+    }catch(e){
+      console.warn("Gagal inisialisasi Firebase, fallback ke polling:", e);
+      return false;
+    }
+  }
+
+  function startForceUpdatePollingFallback_(){
     if(forceUpdatePollTimer) clearInterval(forceUpdatePollTimer);
     forceUpdatePollTimer = setInterval(checkAppVersion, 30000);
+  }
+
+  function startForceUpdatePolling(){
+    checkAppVersion(); // ambil baseline versi pertama kali (via backend, seperti sebelumnya)
+
+    if(!initFirebaseIfNeeded_()){
+      // FIREBASE_WEB_CONFIG belum diisi atau SDK gagal dimuat -> tetap pakai polling 30 detik.
+      startForceUpdatePollingFallback_();
+      return;
+    }
+
+    if(fbUnsubscribeVersion) fbUnsubscribeVersion();
+    fbUnsubscribeVersion = fbDb.collection("system").doc("appVersion").onSnapshot(
+      (snap)=>{
+        if(!snap.exists) return;
+        const data = snap.data();
+        const remoteVersion = typeof data.version === "number" ? data.version : Number(data.version);
+        if(isNaN(remoteVersion)) return;
+        if(localAppVersion === 0){
+          localAppVersion = remoteVersion;
+          return;
+        }
+        if(remoteVersion > localAppVersion && !forceUpdateTriggered){
+          forceUpdateTriggered = true;
+          playForceUpdateAnimation();
+        }
+      },
+      (err)=>{
+        console.warn("Firestore realtime listener gagal, fallback ke polling 30 detik:", err);
+        startForceUpdatePollingFallback_();
+      }
+    );
   }
 
   triggerForceUpdateBtn.addEventListener("click", async ()=>{
