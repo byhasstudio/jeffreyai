@@ -143,49 +143,6 @@
   }
   .model-option:hover{background:var(--bg-3); padding-left:18px;}
   .model-option.selected{color:var(--accent); font-weight:600;}
-  .model-option{flex-direction:column; align-items:flex-start; gap:2px;}
-  .model-option-top{display:flex; align-items:center; justify-content:space-between; width:100%; gap:8px;}
-  .model-option-name{font-weight:600; font-size:13.5px;}
-  .model-option.selected .model-option-name{color:var(--accent);}
-  .model-option-desc{font-size:11.5px; color:var(--text-2); font-weight:400; line-height:1.3;}
-  .model-option-check{color:var(--accent); font-size:13px; flex-shrink:0;}
-
-  /* Menu "Upaya" (effort level) */
-  .effort-menu{
-    position:absolute; bottom:calc(100% + 8px); left:0; min-width:190px; background:var(--bg);
-    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-lg); z-index:60;
-    opacity:0; transform:translateY(8px) scale(.97); pointer-events:none;
-    transition:opacity .18s var(--ease), transform .18s var(--ease); overflow:hidden;
-  }
-  .effort-menu.open{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
-  .effort-option{
-    padding:9px 14px; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center;
-    transition:background .15s var(--ease);
-  }
-  .effort-option:hover{background:var(--bg-3);}
-  .effort-option.selected{color:var(--accent); font-weight:600;}
-  .effort-option-badge{font-size:10.5px; color:var(--text-2); font-weight:400;}
-
-  /* Blok "Berpikir" (thinking / reasoning) */
-  .thinking-block{
-    margin-bottom:8px; border:1px solid var(--border); border-radius:12px; overflow:hidden;
-    background:var(--bg-2); font-size:12.5px;
-  }
-  .thinking-header{
-    display:flex; align-items:center; gap:8px; padding:8px 12px; cursor:pointer; user-select:none;
-    color:var(--text-2); transition:background .15s var(--ease);
-  }
-  .thinking-header:hover{background:var(--bg-3);}
-  .thinking-header .thinking-icon{animation:none;}
-  .thinking-block.active .thinking-header .thinking-icon{animation:spin 1.6s linear infinite;}
-  .thinking-header .thinking-label{flex:1; font-weight:500;}
-  .thinking-header .thinking-chevron{transition:transform .2s var(--ease); font-size:11px;}
-  .thinking-block.collapsed .thinking-header .thinking-chevron{transform:rotate(-90deg);}
-  .thinking-body{
-    padding:0 12px 10px 34px; color:var(--text-2); white-space:pre-wrap; line-height:1.5;
-    max-height:220px; overflow-y:auto;
-  }
-  .thinking-block.collapsed .thinking-body{display:none;}
   .api-status{margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-2);}
   .status-dot{width:7px; height:7px; border-radius:50%; background:#ccc; transition:background .3s var(--ease);}
   .status-dot.ok{background:#22c55e; animation:glowPulse 2.2s ease-out infinite;}
@@ -424,42 +381,6 @@
   }
   .prompt-preset-chip:hover{background:var(--bg-3); border-color:var(--accent); transform:translateY(-1px);}
 
-  /* ---------- Force Update overlay ---------- */
-  #forceUpdateOverlay{
-    position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center;
-    background:rgba(10,10,14,0.72); backdrop-filter:blur(6px); opacity:0; transition:opacity .35s var(--ease);
-  }
-  #forceUpdateOverlay.show{ opacity:1; }
-  .fu-card{
-    display:flex; flex-direction:column; align-items:center; gap:18px; padding:36px 40px; border-radius:20px;
-    background:var(--bg); box-shadow:0 20px 60px rgba(0,0,0,0.4); transform:scale(.9) translateY(10px);
-    transition:transform .4s var(--ease); text-align:center; max-width:320px;
-  }
-  #forceUpdateOverlay.show .fu-card{ transform:scale(1) translateY(0); }
-  .fu-ring{
-    width:74px; height:74px; border-radius:50%; position:relative;
-    background:conic-gradient(var(--accent) var(--fu-progress,0%), var(--bg-3) 0);
-    display:flex; align-items:center; justify-content:center;
-    transition:background .25s linear;
-  }
-  .fu-ring::before{
-    content:""; position:absolute; inset:6px; border-radius:50%; background:var(--bg);
-  }
-  .fu-ring-icon{ position:relative; font-size:26px; animation:fuSpin 1.6s linear infinite; }
-  @keyframes fuSpin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-  .fu-title{ font-size:16px; font-weight:700; color:var(--text); }
-  .fu-sub{ font-size:13px; color:var(--text-2); line-height:1.5; }
-  .fu-progress-text{ font-size:12px; font-weight:600; color:var(--accent); }
-
-  .fu-admin-btn{
-    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
-    padding:10px 14px; border-radius:10px; border:1px solid var(--accent); color:#fff; cursor:pointer;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2)); font-size:13.5px; font-weight:600;
-    transition:transform .15s var(--ease), box-shadow .15s var(--ease), opacity .15s var(--ease);
-  }
-  .fu-admin-btn:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(16,163,127,0.35); }
-  .fu-admin-btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; box-shadow:none; }
-
   @media (max-width:768px){
     .sidebar{position:fixed; z-index:50; height:100vh; transform:translateX(-100%); box-shadow:var(--shadow-lg);}
     .sidebar.open{transform:translateX(0);}
@@ -478,20 +399,11 @@
     position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
     padding:24px; background:radial-gradient(circle at 50% -10%, #123a30, #06110e 70%);
     overflow-y:auto;
-    opacity:0; visibility:hidden; transition:opacity .32s var(--ease), visibility 0s linear .32s;
-  }
-  .auth-screen.show{
-    opacity:1; visibility:visible; transition:opacity .32s var(--ease), visibility 0s linear 0s;
   }
   .auth-card{
     width:100%; max-width:420px; background:linear-gradient(180deg, #10281f, #0b1e17);
     border:1px solid rgba(255,255,255,0.06); border-radius:28px; padding:34px 28px 28px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.45); position:relative;
-    transform:translateY(18px) scale(.96); opacity:0;
-    transition:transform .38s var(--ease-spring), opacity .3s var(--ease);
-  }
-  .auth-screen.show .auth-card{
-    transform:translateY(0) scale(1); opacity:1;
+    box-shadow:0 20px 60px rgba(0,0,0,0.45); position:relative; animation:scaleIn .35s var(--ease);
   }
   .auth-logo-bubble{
     width:56px; height:56px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center;
@@ -508,17 +420,7 @@
     transition:background .2s var(--ease), color .2s var(--ease);
   }
   .auth-tab.active{background:linear-gradient(135deg,#1f9d76,#17a589); color:#fff; box-shadow:0 4px 14px rgba(16,163,127,0.35);}
-  .auth-tab:active{transform:scale(.96);}
-  .auth-form-fields{
-    transition:opacity .22s var(--ease), transform .22s var(--ease);
-  }
-  .auth-form-fields.switching{opacity:0; transform:translateY(4px);}
   .auth-field{position:relative; margin-bottom:14px;}
-  .auth-field-confirm{
-    overflow:hidden; max-height:0; opacity:0; margin-bottom:0;
-    transition:max-height .32s var(--ease), opacity .28s var(--ease), margin-bottom .32s var(--ease);
-  }
-  .auth-field-confirm.expanded{max-height:80px; opacity:1; margin-bottom:14px;}
   .auth-field-icon{
     position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#6b8c7e; font-size:15px; pointer-events:none;
   }
@@ -562,21 +464,19 @@
 
     <div id="authError" class="auth-error"></div>
 
-    <div class="auth-form-fields" id="authFormFields">
-      <div class="auth-field">
-        <span class="auth-field-icon">👤</span>
-        <input type="text" id="authUsername" autocomplete="username" placeholder="Username">
-      </div>
-      <div class="auth-field">
-        <span class="auth-field-icon">🔒</span>
-        <input type="password" id="authPassword" autocomplete="current-password" placeholder="Password">
-        <button type="button" class="auth-field-eye" data-toggle-for="authPassword">👁️</button>
-      </div>
-      <div class="auth-field auth-field-confirm" id="authConfirmWrap">
-        <span class="auth-field-icon">🔒</span>
-        <input type="password" id="authConfirmPassword" autocomplete="new-password" placeholder="Ulangi Password">
-        <button type="button" class="auth-field-eye" data-toggle-for="authConfirmPassword">👁️</button>
-      </div>
+    <div class="auth-field">
+      <span class="auth-field-icon">👤</span>
+      <input type="text" id="authUsername" autocomplete="username" placeholder="Username">
+    </div>
+    <div class="auth-field">
+      <span class="auth-field-icon">🔒</span>
+      <input type="password" id="authPassword" autocomplete="current-password" placeholder="Password">
+      <button type="button" class="auth-field-eye" data-toggle-for="authPassword">👁️</button>
+    </div>
+    <div class="auth-field" id="authConfirmWrap" style="display:none;">
+      <span class="auth-field-icon">🔒</span>
+      <input type="password" id="authConfirmPassword" autocomplete="new-password" placeholder="Ulangi Password">
+      <button type="button" class="auth-field-eye" data-toggle-for="authConfirmPassword">👁️</button>
     </div>
 
     <button class="auth-submit" id="authSubmitBtn">🔒 Masuk</button>
@@ -647,12 +547,6 @@
               <span id="modelBtnLabel">✨</span>
             </button>
             <div class="model-dropdown" id="modelDropdown"></div>
-          </div>
-          <div class="model-select-wrap">
-            <button class="model-btn" id="effortBtn" title="Level upaya berpikir">
-              <span>🎚️</span>
-            </button>
-            <div class="effort-menu" id="effortMenu"></div>
           </div>
           <button class="model-btn attach-icon-btn" id="attachBtn" title="Lampirkan file">
             <span>📎</span>
@@ -765,13 +659,6 @@
           <div class="settings-row-label">Keluar dari akun</div>
           <button class="btn-danger-outline" id="logoutBtn">Logout</button>
         </div>
-        <div class="settings-row" id="forceUpdateRow" style="display:none; flex-direction:column; align-items:stretch; gap:8px;">
-          <div>
-            <div class="settings-row-label">Update Paksa Semua Perangkat</div>
-            <div class="settings-row-sub">Memaksa semua device reload ke versi terbaru saat ini juga.</div>
-          </div>
-          <button class="fu-admin-btn" id="triggerForceUpdateBtn">🚀 Update Paksa Sekarang</button>
-        </div>
       </div>
       <div class="settings-section">
         <h3>AI</h3>
@@ -788,14 +675,6 @@
   </div>
 </div>
 
-<div id="forceUpdateOverlay">
-  <div class="fu-card">
-    <div class="fu-ring" id="fuRing"><span class="fu-ring-icon">⟳</span></div>
-    <div class="fu-title">Menginstall pembaruan...</div>
-    <div class="fu-sub">Aplikasi sedang diperbarui ke versi terbaru. Mohon tunggu sebentar, jangan tutup halaman ini.</div>
-    <div class="fu-progress-text" id="fuProgressText">0%</div>
-  </div>
-</div>
 <script>
 (function(){
   "use strict";
@@ -815,22 +694,6 @@
   let isGenerating = false;
   let abortController = null;
   let editingMessageIndex = null;
-
-  // Deskripsi singkat tiap model (ditampilkan di dropdown pemilihan model).
-  const MODEL_DESCRIPTIONS = {
-    "gemini-3.5-flash-lite": "Paling cepat, cocok untuk obrolan ringan sehari-hari",
-    "gemini-3.5-flash":      "Seimbang antara kecepatan dan kedalaman jawaban",
-    "gemini-3.8-flash":      "Bisa berpikir lebih dalam sebelum menjawab"
-  };
-
-  // Level "Upaya" -> makin tinggi, makin dalam AI berpikir sebelum menjawab (tapi makin lama & makin banyak token).
-  const EFFORT_LEVELS = [
-    { id:"low",    label:"Rendah",  desc:"Cepat, minim berpikir" },
-    { id:"medium", label:"Sedang",  desc:"Bawaan", isDefault:true },
-    { id:"high",   label:"Tinggi",  desc:"Lebih teliti" },
-    { id:"extra",  label:"Ekstra",  desc:"Lebih dalam, lebih lama" },
-    { id:"max",    label:"Maks",    desc:"Penggunaan token lebih besar" }
-  ];
   let attachedFile = null;   // {name, content} - file teks yang sedang dilampirkan ke pesan berikutnya
   let attachedImage = null;  // {name, mimeType, dataBase64, previewUrl} - gambar yang sedang dilampirkan
   let recognition = null;    // Web Speech API instance untuk voice input
@@ -852,8 +715,6 @@
   const modelBtn = document.getElementById("modelBtn");
   const modelBtnLabel = document.getElementById("modelBtnLabel");
   const modelDropdown = document.getElementById("modelDropdown");
-  const effortBtn = document.getElementById("effortBtn");
-  const effortMenu = document.getElementById("effortMenu");
   const statusDot = document.getElementById("statusDot");
   const statusText = document.getElementById("statusText");
   const chatArea = document.getElementById("chatArea");
@@ -891,28 +752,18 @@
   const authUsername = document.getElementById("authUsername");
   const authPassword = document.getElementById("authPassword");
   const authConfirmWrap = document.getElementById("authConfirmWrap");
-  const authFormFields = document.getElementById("authFormFields");
   const authConfirmPassword = document.getElementById("authConfirmPassword");
   const authSubmitBtn = document.getElementById("authSubmitBtn");
   const authTabLogin = document.getElementById("authTabLogin");
   const authTabSignup = document.getElementById("authTabSignup");
   const settingsUsername = document.getElementById("settingsUsername");
-  const forceUpdateRow = document.getElementById("forceUpdateRow");
-  const triggerForceUpdateBtn = document.getElementById("triggerForceUpdateBtn");
-  const forceUpdateOverlay = document.getElementById("forceUpdateOverlay");
-  const fuRing = document.getElementById("fuRing");
-  const fuProgressText = document.getElementById("fuProgressText");
-  const FORCEUPDATE_ADMIN_USERNAME = "roma";
-  let localAppVersion = 0;
-  let forceUpdatePollTimer = null;
-  let forceUpdateTriggered = false;
   const logoutBtn = document.getElementById("logoutBtn");
   const syncDataBtn = document.getElementById("syncDataBtn");
   const syncStatusText = document.getElementById("syncStatusText");
   const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
 
   let settings = {
-    theme:"system", enterToSend:true, ttsEnabled:false, ttsVoiceURI:"", ttsRate:1, effort:"medium",
+    theme:"system", enterToSend:true, ttsEnabled:false, ttsVoiceURI:"", ttsRate:1,
     quickPrompts: ["Ringkas teks ini", "Perbaiki tata bahasa", "Terjemahkan ke Inggris", "Buatkan poin-poin penting"]
   };
 
@@ -1038,21 +889,13 @@
       selectedModel = AI_MODELS[0];
     }
     AI_MODELS.forEach(m=>{
-      const isSelected = selectedModel && selectedModel.id === m.id;
       const opt = document.createElement("div");
-      opt.className = "model-option" + (isSelected ? " selected" : "");
-      const desc = MODEL_DESCRIPTIONS[m.id] || "";
-      opt.innerHTML = `
-        <div class="model-option-top">
-          <span class="model-option-name">${escapeHtml(m.name)}</span>
-          ${isSelected ? '<span class="model-option-check">✓</span>' : ""}
-        </div>
-        ${desc ? `<div class="model-option-desc">${escapeHtml(desc)}</div>` : ""}`;
+      opt.className = "model-option" + (selectedModel && selectedModel.id === m.id ? " selected" : "");
+      opt.textContent = m.name;
       opt.addEventListener("click", ()=>{
         selectedModel = m;
         modelBtn.title = m.name;
         modelDropdown.classList.remove("open");
-        modelBtn.classList.remove("open");
         renderModelDropdown();
         settingsModelName.textContent = m.name;
         if(currentChatId){
@@ -1064,27 +907,6 @@
     });
     modelBtn.title = selectedModel ? selectedModel.name : "Model";
     settingsModelName.textContent = selectedModel ? selectedModel.name : "-";
-  }
-
-  function renderEffortMenu(){
-    if(!effortMenu) return;
-    effortMenu.innerHTML = "";
-    EFFORT_LEVELS.forEach(lvl=>{
-      const isSelected = (settings.effort || "medium") === lvl.id;
-      const opt = document.createElement("div");
-      opt.className = "effort-option" + (isSelected ? " selected" : "");
-      opt.innerHTML = `
-        <span>${escapeHtml(lvl.label)}</span>
-        <span class="effort-option-badge">${isSelected ? "✓" : (lvl.desc ? escapeHtml(lvl.desc) : "")}</span>`;
-      opt.addEventListener("click", ()=>{
-        settings.effort = lvl.id;
-        saveSettings();
-        effortMenu.classList.remove("open");
-        effortBtn.classList.remove("open");
-        renderEffortMenu();
-      });
-      effortMenu.appendChild(opt);
-    });
   }
 
   function updateApiStatus(){
@@ -1235,17 +1057,8 @@
       content.innerHTML = renderMarkdown(msg.content || "");
     }
 
-    if(msg.role === "assistant" && msg.thinking){
-      const thinkingWrap = document.createElement("div");
-      thinkingWrap.innerHTML = buildThinkingBlockHtml(msg.thinking);
-      body.appendChild(roleLabel);
-      body.appendChild(thinkingWrap.firstElementChild);
-      attachThinkingToggle(body);
-      body.appendChild(content);
-    } else {
-      body.appendChild(roleLabel);
-      body.appendChild(content);
-    }
+    body.appendChild(roleLabel);
+    body.appendChild(content);
 
     const actions = document.createElement("div");
     actions.className = "msg-actions";
@@ -1404,26 +1217,22 @@
     scrollToBottom();
 
     try{
-      const result = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
+      const reply = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
         const typingLabel = typingWrap.querySelector(".msg-role");
         if(typingLabel) typingLabel.textContent = `Jeffrey AI (mencoba lagi ${attempt}/2...)`;
       });
-      const reply = result.reply;
-      const thinking = result.thinking;
 
-      // Bangun ulang bubble: blok "Berpikir" (jika ada) + konten jawaban kosong untuk efek ketik.
+      // Ganti indikator typing dengan bubble kosong, lalu ketik bertahap (efek streaming)
       typingWrap.innerHTML = `
         <div class="msg-avatar">J</div>
         <div class="msg-body">
           <div class="msg-role">Jeffrey AI</div>
-          ${thinking ? buildThinkingBlockHtml(thinking) : ""}
           <div class="msg-content" id="streamingContent"></div>
         </div>`;
-      attachThinkingToggle(typingWrap);
       const streamEl = typingWrap.querySelector("#streamingContent");
       await typeOutText(streamEl, reply, abortController.signal);
 
-      chat.messages.push({ role:"assistant", content: reply, thinking: thinking || null });
+      chat.messages.push({ role:"assistant", content: reply });
       saveChats();
       renderChat();
       if(settings.ttsEnabled) speakText(reply);
@@ -1433,14 +1242,6 @@
       errWrap.className = "error-box";
       if(err.name === "AbortError"){
         errWrap.textContent = "Permintaan dihentikan.";
-      } else if(err.quotaExceeded){
-        const q = err.quota;
-        let extra = "";
-        if(q && q.resetAt){
-          const resetTime = new Date(q.resetAt).toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit" });
-          extra = ` Kuota akan reset sekitar pukul ${resetTime}.`;
-        }
-        errWrap.textContent = "⏳ " + friendlyError(err) + extra;
       } else {
         errWrap.textContent = "Terjadi kesalahan saat menghubungi AI: " + friendlyError(err);
       }
@@ -1449,31 +1250,6 @@
     } finally {
       setGenerating(false);
       abortController = null;
-    }
-  }
-
-  // Bangun HTML untuk blok "Berpikir" (collapsible) berisi ringkasan reasoning dari Gemini.
-  function buildThinkingBlockHtml(thinkingText){
-    return `
-      <div class="thinking-block collapsed" data-thinking>
-        <div class="thinking-header" data-thinking-toggle>
-          <span class="thinking-icon">🤔</span>
-          <span class="thinking-label">Proses berpikir</span>
-          <span class="thinking-chevron">▾</span>
-        </div>
-        <div class="thinking-body">${escapeHtml(thinkingText)}</div>
-      </div>`;
-  }
-
-  // Pasang event listener untuk expand/collapse blok "Berpikir" di dalam sebuah wrapper pesan.
-  function attachThinkingToggle(wrapEl){
-    const block = wrapEl.querySelector("[data-thinking]");
-    if(!block) return;
-    const header = block.querySelector("[data-thinking-toggle]");
-    if(header){
-      header.addEventListener("click", ()=>{
-        block.classList.toggle("collapsed");
-      });
     }
   }
 
@@ -1514,8 +1290,7 @@
       action: "chat",
       model: model.id,
       messages: messages.map(m=>({ role: m.role, content: m.content })),
-      token: session ? session.token : "",
-      effort: settings.effort || "medium"
+      token: session ? session.token : ""
     };
     if(fileContext){
       payload.fileContext = { name: fileContext.name, content: fileContext.content };
@@ -1553,13 +1328,10 @@
             clearSession();
             showAuthOverlay();
           }
-          const quotaErr = new Error(data.error);
-          quotaErr.quotaExceeded = !!data.quotaExceeded;
-          quotaErr.quota = data.quota || null;
-          throw quotaErr;
+          throw new Error(data.error);
         }
         if(typeof data.reply === "string"){
-          return { reply: data.reply, thinking: data.thinking || null, quota: data.quota || null };
+          return data.reply;
         }
         throw new Error("Format respons dari Apps Script tidak dikenali.");
       }catch(err){
@@ -1910,23 +1682,12 @@
   // ---------- Model dropdown ----------
   modelBtn.addEventListener("click", (e)=>{
     e.stopPropagation();
-    effortMenu.classList.remove("open");
-    effortBtn.classList.remove("open");
     modelDropdown.classList.toggle("open");
     modelBtn.classList.toggle("open", modelDropdown.classList.contains("open"));
-  });
-  effortBtn.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    modelDropdown.classList.remove("open");
-    modelBtn.classList.remove("open");
-    effortMenu.classList.toggle("open");
-    effortBtn.classList.toggle("open", effortMenu.classList.contains("open"));
   });
   document.addEventListener("click", ()=>{
     modelDropdown.classList.remove("open");
     modelBtn.classList.remove("open");
-    effortMenu.classList.remove("open");
-    effortBtn.classList.remove("open");
   });
 
   // ---------- Settings modal ----------
@@ -1955,17 +1716,9 @@
   // ---------- Auth ----------
   function showAuthOverlay(){
     authOverlay.style.display = "flex";
-    // Beri browser waktu 1 frame untuk apply display dulu sebelum transisi opacity/transform jalan.
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=> authOverlay.classList.add("show"));
-    });
   }
   function hideAuthOverlay(){
-    authOverlay.classList.remove("show");
-    // Tunggu transisi fade-out selesai baru benar-benar sembunyikan dari layout.
-    setTimeout(()=>{
-      if(!authOverlay.classList.contains("show")) authOverlay.style.display = "none";
-    }, 340);
+    authOverlay.style.display = "none";
   }
   function setAuthError(msg){
     if(!msg){ authError.style.display = "none"; authError.textContent = ""; return; }
@@ -1980,27 +1733,17 @@
     if(authMode === "login"){
       authTabLogin.classList.add("active");
       authTabSignup.classList.remove("active");
-      authConfirmWrap.classList.remove("expanded");
+      authConfirmWrap.style.display = "none";
       authSubmitBtn.innerHTML = "🔒 Masuk";
     } else {
       authTabSignup.classList.add("active");
       authTabLogin.classList.remove("active");
-      authConfirmWrap.classList.add("expanded");
+      authConfirmWrap.style.display = "block";
       authSubmitBtn.innerHTML = "✨ Daftar Sekarang";
     }
   }
-  authTabLogin.addEventListener("click", ()=>{
-    if(authMode === "login") return;
-    authMode = "login";
-    authFormFields.classList.add("switching");
-    setTimeout(()=>{ applyAuthMode(); authFormFields.classList.remove("switching"); }, 140);
-  });
-  authTabSignup.addEventListener("click", ()=>{
-    if(authMode === "signup") return;
-    authMode = "signup";
-    authFormFields.classList.add("switching");
-    setTimeout(()=>{ applyAuthMode(); authFormFields.classList.remove("switching"); }, 140);
-  });
+  authTabLogin.addEventListener("click", ()=>{ authMode = "login"; applyAuthMode(); });
+  authTabSignup.addEventListener("click", ()=>{ authMode = "signup"; applyAuthMode(); });
 
   document.querySelectorAll(".auth-field-eye").forEach(btn=>{
     btn.addEventListener("click", ()=>{
@@ -2050,17 +1793,6 @@
       authConfirmPassword.value = "";
       hideAuthOverlay();
       settingsUsername.textContent = session.username;
-      updateForceUpdateVisibility();
-
-      // Buang riwayat chat lokal dari sesi SEBELUM login (mis. belum login lalu sempat chat/klik
-      // preset di browser yang sama) supaya tidak nyangkut/ketampil seolah "terkirim otomatis"
-      // begitu akun baru login. Riwayat resmi akun akan ditarik oleh pullDataFromServer() di bawah.
-      chats = [];
-      currentChatId = null;
-      saveChats();
-      renderHistory();
-      renderChat();
-
       // Ambil data (chat + settings) dari server setelah login/daftar
       await pullDataFromServer();
     }catch(err){
@@ -2094,15 +1826,13 @@
     }
   }
 
-  async function pullDataFromServer(silent){
+  async function pullDataFromServer(){
     if(!session) return false;
     try{
       const data = await callBackend({ action: "loadData", token: session.token });
       if(data.error){
-        // Hanya paksa logout kalau server benar-benar bilang sesi tidak valid.
-        // Kegagalan lain (jaringan lambat, error sesaat, dll) TIDAK boleh memaksa logout otomatis.
         if(data.needLogin){ clearSession(); showAuthOverlay(); }
-        if(!silent) syncStatusText.textContent = "Gagal ambil data: " + data.error;
+        syncStatusText.textContent = "Gagal ambil data: " + data.error;
         return false;
       }
       if(data.data){
@@ -2120,15 +1850,13 @@
         renderHistory();
         renderChat();
         renderQuickPromptButtons();
-        if(!silent) syncStatusText.textContent = "Data dimuat dari akun ✓";
+        syncStatusText.textContent = "Data dimuat dari akun ✓";
       } else {
-        if(!silent) syncStatusText.textContent = "Belum ada data tersimpan di akun ini";
+        syncStatusText.textContent = "Belum ada data tersimpan di akun ini";
       }
       return true;
     }catch(err){
-      // Error jaringan/exception lain saat auto-load TIDAK memaksa logout,
-      // supaya sesi tetap bertahan walau ada gangguan sesaat.
-      if(!silent) syncStatusText.textContent = "Gagal ambil data: " + (err.message || "tidak diketahui");
+      syncStatusText.textContent = "Gagal ambil data: " + (err.message || "tidak diketahui");
       return false;
     }
   }
@@ -2149,14 +1877,6 @@
       try{ await callBackend({ action: "logout", token: session.token }); }catch(e){}
     }
     clearSession();
-    updateForceUpdateVisibility();
-    // Bersihkan riwayat chat lokal juga, supaya akun lain yang login di browser yang sama
-    // tidak melihat sisa riwayat chat akun sebelumnya.
-    chats = [];
-    currentChatId = null;
-    saveChats();
-    renderHistory();
-    renderChat();
     settingsModal.classList.remove("show");
     authMode = "login";
     applyAuthMode();
@@ -2243,85 +1963,6 @@
   // ---------- New chat ----------
   newChatBtn.addEventListener("click", createNewChat);
 
-  // ---------- Force Update ----------
-  function updateForceUpdateVisibility(){
-    const isAdmin = session && session.username && session.username.toLowerCase() === FORCEUPDATE_ADMIN_USERNAME;
-    forceUpdateRow.style.display = isAdmin ? "flex" : "none";
-  }
-
-  function playForceUpdateAnimation(){
-    forceUpdateOverlay.style.display = "flex";
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=> forceUpdateOverlay.classList.add("show"));
-    });
-    let pct = 0;
-    const duration = 2200;
-    const start = Date.now();
-    const tick = ()=>{
-      const elapsed = Date.now() - start;
-      pct = Math.min(100, Math.round((elapsed/duration)*100));
-      fuRing.style.setProperty("--fu-progress", pct + "%");
-      fuProgressText.textContent = pct + "%";
-      if(pct < 100){
-        requestAnimationFrame(tick);
-      } else {
-        setTimeout(()=> window.location.reload(true), 350);
-      }
-    };
-    requestAnimationFrame(tick);
-  }
-
-  async function checkAppVersion(){
-    try{
-      const data = await callBackend({ action: "getAppVersion" });
-      if(data && typeof data.version === "number"){
-        if(localAppVersion === 0){
-          // Baseline pertama kali load, jangan langsung trigger reload.
-          localAppVersion = data.version;
-          return;
-        }
-        if(data.version > localAppVersion && !forceUpdateTriggered){
-          forceUpdateTriggered = true;
-          if(forceUpdatePollTimer) clearInterval(forceUpdatePollTimer);
-          playForceUpdateAnimation();
-        }
-      }
-    }catch(e){
-      // Diamkan saja kalau gagal polling (misal offline sesaat), coba lagi di interval berikutnya.
-    }
-  }
-
-  function startForceUpdatePolling(){
-    checkAppVersion();
-    if(forceUpdatePollTimer) clearInterval(forceUpdatePollTimer);
-    forceUpdatePollTimer = setInterval(checkAppVersion, 30000);
-  }
-
-  triggerForceUpdateBtn.addEventListener("click", async ()=>{
-    if(!session || !session.token) return;
-    triggerForceUpdateBtn.disabled = true;
-    const originalLabel = triggerForceUpdateBtn.innerHTML;
-    triggerForceUpdateBtn.textContent = "Memicu update...";
-    try{
-      const data = await callBackend({ action: "triggerForceUpdate", token: session.token });
-      if(data.error){
-        alert(data.error);
-        triggerForceUpdateBtn.disabled = false;
-        triggerForceUpdateBtn.innerHTML = originalLabel;
-        return;
-      }
-      triggerForceUpdateBtn.textContent = "✅ Terkirim ke semua perangkat";
-      setTimeout(()=>{
-        triggerForceUpdateBtn.disabled = false;
-        triggerForceUpdateBtn.innerHTML = originalLabel;
-      }, 3000);
-    }catch(e){
-      alert("Gagal memicu update paksa. Coba lagi.");
-      triggerForceUpdateBtn.disabled = false;
-      triggerForceUpdateBtn.innerHTML = originalLabel;
-    }
-  });
-
   // ---------- Init ----------
   async function init(){
     loadSession();
@@ -2331,9 +1972,6 @@
     } else {
       settingsUsername.textContent = session.username;
     }
-
-    updateForceUpdateVisibility();
-    startForceUpdatePolling();
 
     loadSettings();
     loadChats();
@@ -2345,9 +1983,9 @@
     loadVoices();
 
     // Jika sudah login (misal buka di perangkat baru dengan sesi tersimpan),
-    // ambil otomatis data terbaru dari server sekali di awal (silent: tidak tampilkan status/logout paksa jika gagal).
+    // ambil otomatis data terbaru dari server sekali di awal.
     if(session && session.token){
-      pullDataFromServer(true);
+      pullDataFromServer();
     }
 
     modelBtn.title = "Memuat model...";
@@ -2364,7 +2002,6 @@
     }
 
     renderModelDropdown();
-    renderEffortMenu();
     updateApiStatus();
     renderHistory();
     renderChat();
