@@ -476,9 +476,10 @@
     .sidebar.open{transform:translateX(0);}
     .menu-toggle{display:flex;}
     .suggestions{grid-template-columns:1fr;}
-    .input-box{padding:8px 8px 8px 12px; gap:4px;}
-    .attach-icon-btn{width:30px; height:30px; font-size:13px;}
-    .model-btn{width:30px; height:30px;}
+    .input-box{padding:8px 6px 8px 10px; gap:2px;}
+    .attach-icon-btn{width:28px; height:28px; font-size:12.5px;}
+    .model-btn{width:28px; height:28px;}
+    .input-box textarea{font-size:14px; padding:6px 2px;}
   }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -679,7 +680,7 @@
           <button class="model-btn attach-icon-btn" id="voiceBtn" title="Input suara">
             <span>🎤</span>
           </button>
-          <textarea id="messageInput" placeholder="Kirim pesan ke Jeffrey AI..." rows="1"></textarea>
+          <textarea id="messageInput" placeholder="Kirim pesan..." rows="1"></textarea>
           <button class="send-btn" id="sendBtn">➤</button>
         </div>
         <div class="char-counter" id="charCounter"></div>
