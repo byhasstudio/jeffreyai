@@ -1642,10 +1642,9 @@
         const data = await response.json();
 
         if(data.error){
-          if(data.needLogin){
-            clearSession();
-            showAuthOverlay();
-          }
+          // CATATAN: login sekarang divalidasi via Firestore (session lokal), bukan lagi
+          // oleh backend Apps Script ini. Jadi backend chat TIDAK BOLEH memaksa logout
+          // (dulu ini penyebab user tiba-tiba ke-logout & disuruh login berkali-kali).
           const quotaErr = new Error(data.error);
           quotaErr.quotaExceeded = !!data.quotaExceeded;
           quotaErr.quota = data.quota || null;
