@@ -305,6 +305,12 @@
   .typing{display:flex; gap:4px; padding:8px 0;}
   .typing span{width:7px; height:7px; border-radius:50%; background:var(--accent); animation:bounceDot 1.3s infinite ease-in-out;}
   .typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
+  .typing-status-row{display:flex; align-items:center; gap:8px; padding:4px 0;}
+  .typing-status-text{
+    font-size:13px; color:var(--text-2); opacity:0; transform:translateY(3px);
+    transition:opacity .2s var(--ease), transform .2s var(--ease);
+  }
+  .typing-status-text.show{opacity:1; transform:translateY(0);}
 
   .error-box{
     background:rgba(229,72,77,0.1); border:1px solid rgba(229,72,77,0.3); color:var(--danger);
@@ -1397,11 +1403,15 @@
       <div class="msg-avatar">J</div>
       <div class="msg-body">
         <div class="msg-role">Jeffrey AI</div>
-        <div class="typing"><span></span><span></span><span></span></div>
+        <div class="typing-status-row">
+          <span class="typing-status-text"></span>
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
       </div>`;
     welcomeScreen.style.display = "none";
     messagesContainer.appendChild(typingWrap);
     scrollToBottom();
+    const typingStatusTimer = startTypingStatusCycle(typingWrap.querySelector(".typing-status-text"));
 
     try{
       const result = await sendToAI(chat.messages, modelToUse, fileToSend, imageToSend, (attempt)=>{
@@ -1447,6 +1457,7 @@
       messagesContainer.appendChild(errWrap);
       scrollToBottom();
     } finally {
+      clearInterval(typingStatusTimer);
       setGenerating(false);
       abortController = null;
     }
@@ -1504,6 +1515,30 @@
 
   function friendlyError(err){
     return (err && err.message) ? err.message : "Kesalahan tidak diketahui.";
+  }
+
+  // ---------- Teks status berganti-ganti saat AI memproses jawaban ----------
+  const TYPING_STATUS_PHRASES = [
+    "Membaca pesanmu...",
+    "Menganalisis konteks...",
+    "Memikirkan jawaban...",
+    "Menyusun kalimat...",
+    "Menimbang sudut pandang...",
+    "Hampir selesai..."
+  ];
+  function startTypingStatusCycle(el){
+    if(!el) return null;
+    let i = 0;
+    el.textContent = TYPING_STATUS_PHRASES[0];
+    el.classList.add("show");
+    return setInterval(()=>{
+      i = (i + 1) % TYPING_STATUS_PHRASES.length;
+      el.classList.remove("show");
+      setTimeout(()=>{
+        el.textContent = TYPING_STATUS_PHRASES[i];
+        el.classList.add("show");
+      }, 200);
+    }, 2200);
   }
 
   // ---------- API Call (lewat Google Apps Script proxy) ----------
